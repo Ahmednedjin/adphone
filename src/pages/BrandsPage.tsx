@@ -16,8 +16,25 @@ const BrandsPage = () => (
             key={brand.id}
             to={`/brand/${brand.slug}`}
             className="card-phone flex flex-col items-center gap-3 py-8"
+            style={{ borderColor: `${brand.color}30` }}
           >
-            <span className="text-4xl">{brand.logo}</span>
+            <img
+              src={brand.logo}
+              alt={brand.name}
+              className="h-10 w-auto object-contain"
+              onError={(e) => {
+                const el = e.target as HTMLImageElement;
+                el.style.display = 'none';
+                const parent = el.parentElement;
+                if (parent) {
+                  const span = document.createElement('span');
+                  span.className = 'text-3xl font-bold';
+                  span.style.color = brand.color;
+                  span.textContent = brand.name[0];
+                  parent.insertBefore(span, el);
+                }
+              }}
+            />
             <span className="font-semibold text-foreground">{brand.name}</span>
             <span className="text-xs text-muted-foreground">{brand.nameAr}</span>
           </Link>
