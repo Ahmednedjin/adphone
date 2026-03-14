@@ -3,15 +3,15 @@ import { type Phone } from "@/data/phones";
 const specSections: { key: keyof Phone["specs"]; title: string; labels: Record<string, string> }[] = [
   {
     key: "design", title: "التصميم",
-    labels: { height: "الطول", width: "العرض", thickness: "السمك", weight: "الوزن", materials: "الخامات" },
+    labels: { height: "الطول", width: "العرض", thickness: "السمك", weight: "الوزن", materials: "الخامات", colors: "الألوان المتوفرة" },
   },
   {
     key: "screen", title: "الشاشة",
-    labels: { type: "نوع الشاشة", size: "الحجم", resolution: "الدقة", refreshRate: "معدل التحديث", protection: "الحماية" },
+    labels: { type: "نوع الشاشة", size: "الحجم", resolution: "الدقة", ppi: "كثافة البيكسل", refreshRate: "معدل التحديث", touchRate: "معدل اللمس", protection: "الحماية" },
   },
   {
     key: "processor", title: "المعالج",
-    labels: { name: "اسم المعالج", cores: "عدد الأنوية", frequency: "التردد", gpu: "معالج الرسوميات" },
+    labels: { name: "اسم المعالج", cores: "عدد الأنوية", frequency: "التردد", gpu: "معالج الرسوميات", fabrication: "دقة التصنيع" },
   },
   {
     key: "memory", title: "الذاكرة",
@@ -19,20 +19,28 @@ const specSections: { key: keyof Phone["specs"]; title: string; labels: Record<s
   },
   {
     key: "cameras", title: "الكاميرات",
-    labels: { main: "الكاميرا الرئيسية", ultrawide: "الكاميرا الواسعة", telephoto: "الكاميرا المقربة", front: "الكاميرا الأمامية", video: "تصوير الفيديو" },
+    labels: { main: "الكاميرا الرئيسية", ultrawide: "الكاميرا الواسعة", telephoto: "الكاميرا المقربة", macro: "كاميرا الماكرو", front: "الكاميرا الأمامية", video: "تصوير الفيديو" },
+  },
+  {
+    key: "connectivity", title: "الاتصال",
+    labels: { network: "الشبكات", wifi: "Wi-Fi", bluetooth: "Bluetooth", nfc: "NFC", gps: "GPS" },
   },
   {
     key: "battery", title: "البطارية",
-    labels: { capacity: "السعة", charging: "سرعة الشحن", wireless: "الشحن اللاسلكي", port: "منفذ الشحن" },
+    labels: { capacity: "السعة", charging: "سرعة الشحن", wireless: "الشحن اللاسلكي", reverse: "الشحن العكسي" },
   },
   {
-    key: "other", title: "المزايا الأخرى",
-    labels: { fingerprint: "البصمة", waterResistance: "مقاومة الماء", os: "نظام التشغيل", networks: "الشبكات" },
+    key: "software", title: "النظام",
+    labels: { os: "نظام التشغيل", ui: "واجهة المستخدم" },
+  },
+  {
+    key: "sensors", title: "المستشعرات",
+    labels: { fingerprint: "البصمة", faceUnlock: "التعرف على الوجه", gyroscope: "الجيروسكوب", compass: "البوصلة", waterResistance: "مقاومة الماء" },
   },
 ];
 
 const FullSpecsTable = ({ phone }: { phone: Phone }) => (
-  <div className="bg-card rounded-xl border border-border overflow-hidden">
+  <div className="bg-card rounded-xl border border-border overflow-hidden w-full">
     <table className="spec-table">
       <tbody>
         {specSections.map(section => {
@@ -45,7 +53,7 @@ const FullSpecsTable = ({ phone }: { phone: Phone }) => (
               {Object.entries(section.labels).map(([field, label]) => (
                 <tr key={field}>
                   <td className="spec-label">{label}</td>
-                  <td className="spec-value">{data[field]}</td>
+                  <td className="spec-value">{data[field] || "—"}</td>
                 </tr>
               ))}
             </tbody>

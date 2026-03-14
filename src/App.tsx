@@ -7,9 +7,6 @@ import Index from "./pages/Index";
 import PhoneDetail from "./pages/PhoneDetail";
 import BrandsPage from "./pages/BrandsPage";
 import BrandDetail from "./pages/BrandDetail";
-import ComparePage from "./pages/ComparePage";
-import BestPhones from "./pages/BestPhones";
-import NewPhones from "./pages/NewPhones";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,9 +22,6 @@ const App = () => (
           <Route path="/phone/:slug" element={<PhoneDetail />} />
           <Route path="/brands" element={<BrandsPage />} />
           <Route path="/brand/:slug" element={<BrandDetail />} />
-          <Route path="/compare" element={<ComparePage />} />
-          <Route path="/best" element={<BestPhones />} />
-          <Route path="/new" element={<NewPhones />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

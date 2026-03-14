@@ -61,7 +61,7 @@ const PhoneDetail = () => {
         {/* Ad between sections */}
         <AdBanner className="rounded-xl mb-8" />
 
-        {/* Full specs */}
+        {/* Full specs - full width */}
         <div className="mb-12">
           <h2 className="text-xl font-bold text-foreground mb-4">المواصفات التفصيلية</h2>
           <FullSpecsTable phone={phone} />
