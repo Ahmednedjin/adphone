@@ -1,64 +1,156 @@
-import { type Phone } from "@/data/phones";
+import { type DbPhone } from "@/lib/api";
 
-const specSections: { key: keyof Phone["specs"]; title: string; labels: Record<string, string> }[] = [
+type SpecSection = {
+  title: string;
+  rows: { label: string; key: keyof DbPhone }[];
+};
+
+const specSections: SpecSection[] = [
   {
-    key: "design", title: "التصميم",
-    labels: { height: "الطول", width: "العرض", thickness: "السمك", weight: "الوزن", materials: "الخامات", colors: "الألوان المتوفرة" },
+    title: "معلومات عامة",
+    rows: [
+      { label: "تاريخ الإصدار", key: "release_date" },
+      { label: "السعر", key: "price" },
+    ],
   },
   {
-    key: "screen", title: "الشاشة",
-    labels: { type: "نوع الشاشة", size: "الحجم", resolution: "الدقة", ppi: "كثافة البيكسل", refreshRate: "معدل التحديث", touchRate: "معدل اللمس", protection: "الحماية" },
+    title: "التصميم",
+    rows: [
+      { label: "الطول", key: "design_height" },
+      { label: "العرض", key: "design_width" },
+      { label: "السمك", key: "design_thickness" },
+      { label: "الوزن", key: "design_weight" },
+      { label: "الخامات", key: "design_materials" },
+      { label: "الألوان المتوفرة", key: "design_colors" },
+      { label: "نوع الجوانب", key: "design_frame" },
+    ],
   },
   {
-    key: "processor", title: "المعالج",
-    labels: { name: "اسم المعالج", cores: "عدد الأنوية", frequency: "التردد", gpu: "معالج الرسوميات", fabrication: "دقة التصنيع" },
+    title: "الشاشة",
+    rows: [
+      { label: "نوع الشاشة", key: "screen_type" },
+      { label: "الحجم", key: "screen_size" },
+      { label: "الدقة", key: "screen_resolution" },
+      { label: "كثافة البيكسل", key: "screen_ppi" },
+      { label: "معدل التحديث", key: "screen_refresh_rate" },
+      { label: "معدل اللمس", key: "screen_touch_rate" },
+      { label: "قوة السطوع", key: "screen_brightness" },
+      { label: "حماية الشاشة", key: "screen_protection" },
+      { label: "حماية الظهر", key: "screen_back_protection" },
+    ],
   },
   {
-    key: "memory", title: "الذاكرة",
-    labels: { storage: "التخزين", ram: "الرام", type: "نوع الذاكرة", sdCard: "بطاقة الذاكرة" },
+    title: "المعالج",
+    rows: [
+      { label: "اسم المعالج", key: "processor_name" },
+      { label: "عدد الأنوية", key: "processor_cores" },
+      { label: "تردد الأنوية", key: "processor_frequency" },
+      { label: "معالج الرسوميات", key: "processor_gpu" },
+      { label: "دقة التصنيع", key: "processor_fabrication" },
+    ],
   },
   {
-    key: "cameras", title: "الكاميرات",
-    labels: { main: "الكاميرا الرئيسية", ultrawide: "الكاميرا الواسعة", telephoto: "الكاميرا المقربة", macro: "كاميرا الماكرو", front: "الكاميرا الأمامية", video: "تصوير الفيديو" },
+    title: "الأداء",
+    rows: [
+      { label: "نتيجة Antutu", key: "antutu_score" },
+    ],
   },
   {
-    key: "connectivity", title: "الاتصال",
-    labels: { network: "الشبكات", wifi: "Wi-Fi", bluetooth: "Bluetooth", nfc: "NFC", gps: "GPS" },
+    title: "الذاكرة",
+    rows: [
+      { label: "التخزين", key: "memory_storage" },
+      { label: "الرام", key: "memory_ram" },
+      { label: "نوع الذاكرة", key: "memory_type" },
+      { label: "بطاقة الذاكرة", key: "memory_sd_card" },
+    ],
   },
   {
-    key: "battery", title: "البطارية",
-    labels: { capacity: "السعة", charging: "سرعة الشحن", wireless: "الشحن اللاسلكي", reverse: "الشحن العكسي" },
+    title: "الكاميرات",
+    rows: [
+      { label: "الكاميرا الرئيسية", key: "camera_main" },
+      { label: "الكاميرا الواسعة", key: "camera_ultrawide" },
+      { label: "الكاميرا المقربة", key: "camera_telephoto" },
+      { label: "كاميرا الماكرو", key: "camera_macro" },
+      { label: "الكاميرا الأمامية", key: "camera_front" },
+      { label: "تصوير الفيديو", key: "camera_video" },
+    ],
   },
   {
-    key: "software", title: "النظام",
-    labels: { os: "نظام التشغيل", ui: "واجهة المستخدم" },
+    title: "الصوت",
+    rows: [
+      { label: "السماعات", key: "audio_speakers" },
+      { label: "منفذ 3.5mm", key: "audio_jack" },
+    ],
   },
   {
-    key: "sensors", title: "المستشعرات",
-    labels: { fingerprint: "البصمة", faceUnlock: "التعرف على الوجه", gyroscope: "الجيروسكوب", compass: "البوصلة", waterResistance: "مقاومة الماء" },
+    title: "الاتصال",
+    rows: [
+      { label: "بطاقة SIM", key: "connectivity_sim" },
+      { label: "الشبكات", key: "connectivity_network" },
+      { label: "Wi-Fi", key: "connectivity_wifi" },
+      { label: "Bluetooth", key: "connectivity_bluetooth" },
+      { label: "NFC", key: "connectivity_nfc" },
+      { label: "GPS", key: "connectivity_gps" },
+    ],
+  },
+  {
+    title: "الحماية",
+    rows: [
+      { label: "مقاومة الماء والغبار", key: "protection_water" },
+      { label: "معيار الحماية", key: "protection_standard" },
+    ],
+  },
+  {
+    title: "البطارية",
+    rows: [
+      { label: "السعة", key: "battery_capacity" },
+      { label: "سرعة الشحن", key: "battery_charging" },
+      { label: "الشحن اللاسلكي", key: "battery_wireless" },
+      { label: "الشحن العكسي", key: "battery_reverse" },
+    ],
+  },
+  {
+    title: "النظام",
+    rows: [
+      { label: "نظام التشغيل", key: "software_os" },
+      { label: "واجهة الشركة", key: "software_ui" },
+    ],
+  },
+  {
+    title: "المستشعرات",
+    rows: [
+      { label: "البصمة", key: "sensor_fingerprint" },
+      { label: "التعرف على الوجه", key: "sensor_face_unlock" },
+      { label: "الجيروسكوب", key: "sensor_gyroscope" },
+      { label: "البوصلة", key: "sensor_compass" },
+      { label: "مستشعر القرب", key: "sensor_proximity" },
+      { label: "مستشعر الضوء", key: "sensor_light" },
+      { label: "مستشعرات أخرى", key: "sensor_other" },
+    ],
   },
 ];
 
-const FullSpecsTable = ({ phone }: { phone: Phone }) => (
+const FullSpecsTable = ({ phone }: { phone: DbPhone }) => (
   <div className="bg-card rounded-xl border border-border overflow-hidden w-full">
     <table className="spec-table">
       <tbody>
-        {specSections.map(section => {
-          const data = phone.specs[section.key] as Record<string, string>;
-          return (
-            <tbody key={section.key}>
-              <tr>
-                <td colSpan={2} className="spec-header">{section.title}</td>
-              </tr>
-              {Object.entries(section.labels).map(([field, label]) => (
-                <tr key={field}>
+        {specSections.map(section => (
+          <tbody key={section.title}>
+            <tr>
+              <td colSpan={2} className="spec-header">{section.title}</td>
+            </tr>
+            {section.rows.map(({ label, key }) => {
+              const value = phone[key];
+              if (!value) return null;
+              return (
+                <tr key={key}>
                   <td className="spec-label">{label}</td>
-                  <td className="spec-value">{data[field] || "—"}</td>
+                  <td className="spec-value">{String(value)}</td>
                 </tr>
-              ))}
-            </tbody>
-          );
-        })}
+              );
+            })}
+          </tbody>
+        ))}
       </tbody>
     </table>
   </div>
