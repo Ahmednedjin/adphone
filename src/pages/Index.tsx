@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Camera } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import AdBanner from "@/components/AdBanner";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -13,6 +14,9 @@ const Index = () => {
   const [results, setResults] = useState<DbPhone[]>([]);
   const [phones, setPhones] = useState<DbPhone[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiSearching, setAiSearching] = useState(false);
+  const [correctedName, setCorrectedName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,14 +28,51 @@ const Index = () => {
 
   useEffect(() => {
     if (query.length > 1) {
-      const timer = setTimeout(() => {
-        searchPhones(query).then(setResults);
-      }, 300);
+      const timer = setTimeout(async () => {
+        const dbResults = await searchPhones(query);
+        if (dbResults.length > 0) {
+          setResults(dbResults);
+          setCorrectedName(null);
+        } else {
+          // Try AI search
+          setAiSearching(true);
+          try {
+            const { data } = await supabase.functions.invoke("ai-search", { body: { query } });
+            if (data?.phones?.length > 0) {
+              setResults(data.phones);
+              if (data.corrected) setCorrectedName(data.correctedName);
+            } else {
+              setResults([]);
+              if (data?.correctedName) setCorrectedName(data.correctedName);
+            }
+          } catch { setResults([]); }
+          setAiSearching(false);
+        }
+      }, 400);
       return () => clearTimeout(timer);
     } else {
       setResults([]);
+      setCorrectedName(null);
     }
   }, [query]);
+
+  const handleImageSearch = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(",")[1];
+      setAiSearching(true);
+      try {
+        const { data } = await supabase.functions.invoke("ai-search", { body: { imageBase64: base64 } });
+        if (data?.phones?.length > 0) {
+          setResults(data.phones);
+          setShowResults(true);
+          setCorrectedName(data.correctedName);
+        }
+      } catch {}
+      setAiSearching(false);
+    };
+    reader.readAsDataURL(file);
+  };
 
   return (
     <div className="min-h-screen bg-background pb-16">
@@ -56,17 +97,20 @@ const Index = () => {
                 onFocus={() => setShowResults(true)}
                 onBlur={() => setTimeout(() => setShowResults(false), 200)}
               />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleImageSearch(e.target.files[0]); }} />
               <button
                 className="p-2 rounded-lg hover:bg-secondary transition-colors text-muted-foreground hover:text-primary shrink-0"
                 title="البحث بالصورة"
-                onClick={() => {/* TODO: implement image search */}}
+                onClick={() => fileInputRef.current?.click()}
               >
                 <Camera className="w-5 h-5" />
               </button>
             </div>
-            {showResults && results.length > 0 && (
+            {showResults && (results.length > 0 || aiSearching || correctedName) && (
               <div className="absolute top-full mt-1 left-0 right-0 bg-card border border-border rounded-xl shadow-lg z-50 max-h-80 overflow-auto">
-                {results.map(phone => (
+                {aiSearching && <p className="px-5 py-3 text-sm text-muted-foreground">🔍 جاري البحث الذكي...</p>}
+                {correctedName && <p className="px-5 py-2 text-xs text-primary">هل تقصد: {correctedName}؟</p>}
+                {results.map((phone: any) => (
                   <button
                     key={phone.id}
                     className="w-full text-right px-5 py-3 hover:bg-secondary text-sm text-foreground transition-colors flex items-center gap-3"
@@ -75,7 +119,7 @@ const Index = () => {
                     <img src={phone.image || '/placeholder.svg'} alt="" className="w-8 h-10 object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }} />
                     <div>
                       <span className="font-medium block">{phone.name}</span>
-                      <span className="text-xs text-muted-foreground">{(phone as any).brands?.name || ''} · {phone.year}</span>
+                      <span className="text-xs text-muted-foreground">{phone.brands?.name || ''} · {phone.year}</span>
                     </div>
                   </button>
                 ))}
