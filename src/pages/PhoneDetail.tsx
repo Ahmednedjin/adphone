@@ -101,11 +101,15 @@ const PhoneDetail = () => {
         {/* Ad */}
         <AdBanner className="rounded-xl mb-8" />
 
-        {/* Full specs */}
+        {/* Full specs - full width */}
         <div className="mb-12">
           <h2 className="text-xl font-bold text-foreground mb-4">المواصفات التفصيلية</h2>
-          <FullSpecsTable phone={phone} />
         </div>
+      </main>
+      <div className="px-4 mb-12">
+        <FullSpecsTable phone={phone} />
+      </div>
+      <main className="container">
 
         {/* Similar phones */}
         {similar.length > 0 && (
