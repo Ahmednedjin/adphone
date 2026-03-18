@@ -1,1 +1,7 @@
 project_id = "hjluocybiymexozulhmn"
+
+[functions.ai-phone-specs]
+verify_jwt = false
+
+[functions.ai-search]
+verify_jwt = false
