@@ -1,8 +1,11 @@
 import { Link } from "react-router-dom";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { label: "الرئيسية", to: "/" },
   { label: "الشركات", to: "/brands" },
+  { label: "من نحن", to: "/about" },
+  { label: "اتصل بنا", to: "/contact" },
 ];
 
 const SiteHeader = () => {
@@ -10,10 +13,12 @@ const SiteHeader = () => {
     <header className="bg-card border-b border-border sticky top-0 z-40">
       <div className="container flex items-center justify-between h-16 gap-4">
         <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground font-bold text-sm">AD</span>
-          </div>
-          <span className="font-bold text-lg text-foreground">AD Phone</span>
+          <img
+            src={logo}
+            alt="AD Phone"
+            className="h-10 w-auto object-contain rounded shadow-sm"
+          />
+          <span className="font-bold text-lg text-foreground hidden sm:inline">AD Phone</span>
         </Link>
 
         <nav className="flex items-center gap-1">
