@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Search, Camera, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { searchPhones, type DbPhone } from "@/lib/api";
@@ -22,23 +22,48 @@ const SiteHeader = () => {
   const [aiSearching, setAiSearching] = useState(false);
   const [correctedName, setCorrectedName] = useState<string | null>(null);
   const [mobileMenu, setMobileMenu] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const lastAiCallRef = useRef<number>(0);
 
-  const handleSearch = async (val: string) => {
-    setQuery(val);
+  const doSearch = useCallback(async (val: string) => {
     if (val.length < 2) { setResults([]); setCorrectedName(null); return; }
+    
+    // Always search DB first
     const dbResults = await searchPhones(val);
     if (dbResults.length > 0) {
       setResults(dbResults);
       setCorrectedName(null);
-    } else {
-      setAiSearching(true);
-      try {
-        const { data } = await supabase.functions.invoke("ai-search", { body: { query: val } });
-        setResults(data?.phones || []);
-        if (data?.corrected) setCorrectedName(data.correctedName);
-      } catch { setResults([]); }
-      setAiSearching(false);
+      return;
     }
+
+    // Only call AI if no DB results AND enough time has passed (5s cooldown)
+    const now = Date.now();
+    if (now - lastAiCallRef.current < 5000) {
+      setResults([]);
+      return;
+    }
+
+    // Only call AI for queries >= 4 chars to avoid noise
+    if (val.length < 4) { setResults([]); return; }
+
+    lastAiCallRef.current = now;
+    setAiSearching(true);
+    try {
+      const { data } = await supabase.functions.invoke("ai-search", { body: { query: val } });
+      setResults(data?.phones || []);
+      if (data?.corrected) setCorrectedName(data.correctedName);
+      else setCorrectedName(null);
+    } catch {
+      setResults([]);
+    }
+    setAiSearching(false);
+  }, []);
+
+  const handleInputChange = (val: string) => {
+    setQuery(val);
+    setShowResults(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => doSearch(val), 600);
   };
 
   return (
@@ -58,7 +83,7 @@ const SiteHeader = () => {
               placeholder="ابحث عن هاتف..."
               className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
               value={query}
-              onChange={e => { handleSearch(e.target.value); setShowResults(true); }}
+              onChange={e => handleInputChange(e.target.value)}
               onFocus={() => setShowResults(true)}
               onBlur={() => setTimeout(() => setShowResults(false), 200)}
             />
@@ -107,7 +132,7 @@ const SiteHeader = () => {
               placeholder="ابحث عن هاتف..."
               className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
               value={query}
-              onChange={e => { handleSearch(e.target.value); setShowResults(true); }}
+              onChange={e => handleInputChange(e.target.value)}
             />
           </div>
           {showResults && results.length > 0 && (
