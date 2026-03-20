@@ -5,7 +5,7 @@ const PhoneCard = ({ phone }: { phone: DbPhone }) => {
   const brand = (phone as any).brands;
   return (
     <Link to={`/phone/${phone.slug}`} className="card-phone group block">
-      <div className="aspect-[3/4] bg-secondary rounded-lg mb-3 overflow-hidden flex items-center justify-center p-4">
+      <div className="aspect-[3/4] bg-secondary rounded-lg mb-3 overflow-hidden flex items-center justify-center p-3">
         <img
           src={phone.image || '/placeholder.svg'}
           alt={phone.name}
@@ -14,9 +14,8 @@ const PhoneCard = ({ phone }: { phone: DbPhone }) => {
           onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
         />
       </div>
-      <h3 className="font-semibold text-sm text-foreground leading-tight mb-1">{phone.name}</h3>
+      <h3 className="font-semibold text-sm text-foreground leading-tight mb-1 line-clamp-2">{phone.name}</h3>
       <p className="text-xs text-muted-foreground">{brand?.name || ''} · {phone.year}</p>
-      {phone.price && <p className="text-xs font-semibold text-primary mt-1">{phone.price}</p>}
     </Link>
   );
 };
