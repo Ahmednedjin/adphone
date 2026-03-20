@@ -62,7 +62,7 @@ const PhoneDetail = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-16">
+    <div className="min-h-screen bg-background pb-16" dir="rtl">
       <AdBanner />
       <SiteHeader />
 
@@ -92,28 +92,27 @@ const PhoneDetail = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-1">مواصفات {phone.name}</h1>
             <p className="text-sm text-muted-foreground mb-1">{brand?.name} · {phone.year}</p>
-            {phone.release_date && <p className="text-xs text-muted-foreground mb-1">تاريخ الإصدار: {phone.release_date}</p>}
-            {phone.price && <p className="text-lg font-bold text-primary mb-6">{phone.price}</p>}
+            {phone.release_date && <p className="text-xs text-muted-foreground mb-6">تاريخ الإصدار: {phone.release_date}</p>}
             <QuickSpecs phone={phone} />
           </div>
         </div>
 
-        {/* Ad */}
+        {/* Ad between quick and full specs */}
         <AdBanner className="rounded-xl mb-8" />
 
-        {/* Full specs - full width */}
-        <div className="mb-12">
-          <h2 className="text-xl font-bold text-foreground mb-4">المواصفات التفصيلية</h2>
-        </div>
+        {/* Full specs heading */}
+        <h2 className="text-xl font-bold text-foreground mb-4">المواصفات التفصيلية</h2>
       </main>
+
+      {/* Full specs - full width */}
       <div className="px-4 mb-12">
         <FullSpecsTable phone={phone} />
       </div>
-      <main className="container">
 
+      <main className="container">
         {/* Similar phones */}
         {similar.length > 0 && (
-          <div>
+          <div className="mb-12">
             <h2 className="text-xl font-bold text-foreground mb-4">هواتف مشابهة</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {similar.map(p => (
@@ -129,7 +128,6 @@ const PhoneDetail = () => {
         <span className="text-muted-foreground text-xs">مساحة إعلانية</span>
       </div>
 
-      {/* Gallery modal */}
       {galleryOpen && <PhoneGallery images={allImages} onClose={() => setGalleryOpen(false)} />}
     </div>
   );

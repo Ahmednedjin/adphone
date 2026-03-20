@@ -123,7 +123,7 @@ const AdminPanel = () => {
     { title: "معلومات أساسية", fields: [
       { key: "name", label: "الاسم (إنجليزي)" }, { key: "name_ar", label: "الاسم (عربي)" },
       { key: "year", label: "السنة", type: "number" }, { key: "release_date", label: "تاريخ الإصدار" },
-      { key: "price", label: "السعر ($)" }, { key: "price_category", label: "الفئة السعرية" },
+      { key: "price_category", label: "الفئة السعرية" },
       { key: "image", label: "رابط الصورة" }, { key: "status", label: "الحالة (draft/published)" },
     ]},
     { title: "المواصفات السريعة", fields: [
