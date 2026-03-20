@@ -92,7 +92,7 @@ const PhoneDetail = () => {
           <div>
             <h1 className="text-2xl font-bold text-foreground mb-1">مواصفات {phone.name}</h1>
             <p className="text-sm text-muted-foreground mb-1">{brand?.name} · {phone.year}</p>
-            {phone.release_date && <p className="text-xs text-muted-foreground mb-4">تاريخ الإصدار: {phone.release_date}</p>}
+            {phone.release_date && <p className="text-xs text-muted-foreground mb-6">تاريخ الإصدار: {phone.release_date}</p>}
             <QuickSpecs phone={phone} />
           </div>
         </div>
