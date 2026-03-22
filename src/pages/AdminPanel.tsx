@@ -98,7 +98,7 @@ const AdminPanel = () => {
   const createNewPhone = () => {
     setEditPhone({
       id: "new", slug: "", name: "", name_ar: null, brand_id: brands[0]?.id || "",
-      year: new Date().getFullYear(), release_date: null, price: null, price_category: "mid",
+      year: new Date().getFullYear(), release_date: null,
       image: null, status: "draft",
       quick_screen: null, quick_processor: null, quick_camera: null, quick_front_camera: null, quick_memory: null, quick_battery: null,
       design_height: null, design_width: null, design_thickness: null, design_weight: null, design_materials: null, design_colors: null, design_frame: null,
@@ -123,7 +123,6 @@ const AdminPanel = () => {
     { title: "معلومات أساسية", fields: [
       { key: "name", label: "الاسم (إنجليزي)" }, { key: "name_ar", label: "الاسم (عربي)" },
       { key: "year", label: "السنة", type: "number" }, { key: "release_date", label: "تاريخ الإصدار" },
-      { key: "price_category", label: "الفئة السعرية" },
       { key: "image", label: "رابط الصورة" }, { key: "status", label: "الحالة (draft/published)" },
     ]},
     { title: "المواصفات السريعة", fields: [

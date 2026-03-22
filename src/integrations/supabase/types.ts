@@ -117,8 +117,6 @@ export type Database = {
           memory_type: string | null
           name: string
           name_ar: string | null
-          price: string | null
-          price_category: string | null
           processor_cores: string | null
           processor_fabrication: string | null
           processor_frequency: string | null
@@ -193,8 +191,6 @@ export type Database = {
           memory_type?: string | null
           name: string
           name_ar?: string | null
-          price?: string | null
-          price_category?: string | null
           processor_cores?: string | null
           processor_fabrication?: string | null
           processor_frequency?: string | null
@@ -269,8 +265,6 @@ export type Database = {
           memory_type?: string | null
           name?: string
           name_ar?: string | null
-          price?: string | null
-          price_category?: string | null
           processor_cores?: string | null
           processor_fabrication?: string | null
           processor_frequency?: string | null
