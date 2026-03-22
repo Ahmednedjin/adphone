@@ -8,8 +8,6 @@ export type DbPhone = {
   brand_id: string;
   year: number | null;
   release_date: string | null;
-  price: string | null;
-  price_category: string | null;
   image: string | null;
   status: string | null;
   quick_screen: string | null;
@@ -181,8 +179,8 @@ export async function fetchSimilarPhones(phone: DbPhone): Promise<DbPhone[]> {
     .from("phones")
     .select("*, brands(*)")
     .eq("status", "published")
+    .eq("brand_id", phone.brand_id)
     .neq("id", phone.id)
-    .eq("price_category", phone.price_category || "mid")
     .limit(8);
   if (error) throw error;
   return data || [];

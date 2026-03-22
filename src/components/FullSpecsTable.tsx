@@ -10,7 +10,6 @@ const specSections: SpecSection[] = [
     title: "معلومات عامة",
     rows: [
       { label: "تاريخ الإصدار", key: "release_date" },
-      { label: "السعر", key: "price" },
     ],
   },
   {
