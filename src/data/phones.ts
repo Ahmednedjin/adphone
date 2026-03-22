@@ -108,8 +108,8 @@ export const brands: Brand[] = [
   { id: "16", slug: "asus", name: "ASUS", nameAr: "أسوس", logo: "https://upload.wikimedia.org/wikipedia/commons/2/2e/ASUS_Logo.svg", color: "#00529B" },
 ];
 
-function p(id: string, slug: string, name: string, brand: string, brandSlug: string, year: number, price: string, priceCategory: Phone["priceCategory"], image: string, qs: Phone["quickSpecs"], specs: Phone["specs"]): Phone {
-  return { id, slug, name, brand, brandSlug, image, year, price, priceCategory, quickSpecs: qs, specs };
+function p(id: string, slug: string, name: string, brand: string, brandSlug: string, year: number, _price: string, _priceCategory: string | undefined, image: string, qs: Phone["quickSpecs"], specs: Phone["specs"]): Phone {
+  return { id, slug, name, brand, brandSlug, image, year, quickSpecs: qs, specs };
 }
 
 const ds = (h: string, w: string, t: string, wt: string, m: string, c: string): Phone["specs"]["design"] => ({ height: h, width: w, thickness: t, weight: wt, materials: m, colors: c });
