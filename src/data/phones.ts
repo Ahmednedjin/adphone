@@ -708,12 +708,11 @@ export function getPhoneBySlug(slug: string): Phone | undefined {
 }
 
 export function getSimilarPhones(phone: Phone, count = 4): Phone[] {
-  // Score similarity based on price category, processor tier, and battery
   const scored = phones
     .filter(ph => ph.id !== phone.id)
     .map(ph => {
       let score = 0;
-      if (ph.priceCategory === phone.priceCategory) score += 3;
+      if (ph.brandSlug === phone.brandSlug) score += 3;
       if (ph.brandSlug !== phone.brandSlug) score += 1; // prefer different brands
       // similar year
       if (Math.abs(ph.year - phone.year) <= 1) score += 1;
