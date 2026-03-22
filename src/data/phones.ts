@@ -6,8 +6,6 @@ export interface Phone {
   brandSlug: string;
   image: string;
   year: number;
-  price?: string;
-  priceCategory?: "budget" | "mid" | "flagship";
   colors?: string;
   quickSpecs: {
     screen: string;
