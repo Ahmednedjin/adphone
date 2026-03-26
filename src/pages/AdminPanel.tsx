@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { fetchPhones, fetchBrands, type DbPhone, type DbBrand } from "@/lib/api";
+import {
+  getMe, adminLogout, adminFetchPhones, adminCreatePhone, adminUpdatePhone, adminDeletePhone,
+  fetchBrands, aiPhoneSpecs, type DbPhone, type DbBrand
+} from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -23,35 +25,34 @@ const AdminPanel = () => {
   }, []);
 
   const checkAdmin = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { navigate("/admin-login"); return; }
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").single();
-    if (!data) { navigate("/admin-login"); return; }
+    const me = await getMe();
+    if (!me) { navigate("/admin-login"); return; }
     setIsAdmin(true);
     loadData();
   };
 
   const loadData = async () => {
     setLoading(true);
-    const [phonesData, brandsData] = await Promise.all([
-      supabase.from("phones").select("*, brands(*)").order("created_at", { ascending: false }).limit(200).then(r => r.data || []),
-      fetchBrands()
-    ]);
-    setPhones(phonesData as any);
+    const [phonesData, brandsData] = await Promise.all([adminFetchPhones(), fetchBrands()]);
+    setPhones(phonesData);
     setBrands(brandsData);
     setLoading(false);
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await adminLogout();
     navigate("/admin-login");
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("هل تريد حذف هذا الهاتف؟")) return;
-    await supabase.from("phones").delete().eq("id", id);
-    toast({ title: "تم الحذف" });
-    loadData();
+    try {
+      await adminDeletePhone(id);
+      toast({ title: "تم الحذف" });
+      loadData();
+    } catch (err: any) {
+      toast({ title: "خطأ", description: err.message, variant: "destructive" });
+    }
   };
 
   const handleAiFill = async (phoneName: string) => {
@@ -61,14 +62,9 @@ const AdminPanel = () => {
     }
     setAiLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("ai-phone-specs", {
-        body: { phoneName }
-      });
-      if (error) throw error;
-      if (data?.specs) {
-        setEditPhone(prev => ({ ...prev!, ...data.specs }));
-        toast({ title: "تم ملء المواصفات بنجاح ✨" });
-      }
+      const { specs } = await aiPhoneSpecs(phoneName);
+      setEditPhone(prev => ({ ...prev!, ...specs }));
+      toast({ title: "تم ملء المواصفات بنجاح ✨" });
     } catch (err: any) {
       toast({ title: "خطأ في جلب المواصفات", description: err.message, variant: "destructive" });
     }
@@ -77,22 +73,21 @@ const AdminPanel = () => {
 
   const handleSave = async () => {
     if (!editPhone) return;
-    const { brands: _, ...phoneData } = editPhone as any;
-    const isNew = !phoneData.id || phoneData.id === "new";
-
-    if (isNew) {
-      delete phoneData.id;
-      phoneData.slug = phoneData.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/-+$/, "") || "phone";
-      const { error } = await supabase.from("phones").insert(phoneData);
-      if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
-    } else {
-      const { error } = await supabase.from("phones").update(phoneData).eq("id", phoneData.id);
-      if (error) { toast({ title: "خطأ", description: error.message, variant: "destructive" }); return; }
+    const isNew = !editPhone.id || editPhone.id === "new";
+    try {
+      if (isNew) {
+        const { id: _id, brands: _b, ...phoneData } = editPhone as any;
+        await adminCreatePhone(phoneData);
+      } else {
+        await adminUpdatePhone(editPhone.id, editPhone);
+      }
+      toast({ title: isNew ? "تمت الإضافة ✓" : "تم التحديث ✓" });
+      setShowForm(false);
+      setEditPhone(null);
+      loadData();
+    } catch (err: any) {
+      toast({ title: "خطأ", description: err.message, variant: "destructive" });
     }
-    toast({ title: isNew ? "تمت الإضافة ✓" : "تم التحديث ✓" });
-    setShowForm(false);
-    setEditPhone(null);
-    loadData();
   };
 
   const createNewPhone = () => {
@@ -202,7 +197,6 @@ const AdminPanel = () => {
               </div>
             </div>
 
-            {/* AI Fill button */}
             <div className="flex gap-2 items-end">
               <div className="flex-1">
                 <label className="text-sm text-muted-foreground mb-1 block">ملء تلقائي بالذكاء الاصطناعي</label>
@@ -213,7 +207,6 @@ const AdminPanel = () => {
               </Button>
             </div>
 
-            {/* Brand select */}
             <div>
               <label className="text-sm text-muted-foreground mb-1 block">الشركة</label>
               <select
@@ -225,7 +218,6 @@ const AdminPanel = () => {
               </select>
             </div>
 
-            {/* Field groups */}
             {fieldGroups.map(group => (
               <div key={group.title} className="bg-card rounded-xl border border-border p-4">
                 <h3 className="font-bold text-foreground mb-3">{group.title}</h3>
@@ -234,7 +226,7 @@ const AdminPanel = () => {
                     <div key={f.key}>
                       <label className="text-xs text-muted-foreground mb-1 block">{f.label}</label>
                       <Input
-                        type={f.type || "text"}
+                        type={(f as any).type || "text"}
                         value={(editPhone as any)[f.key] ?? ""}
                         onChange={e => setEditPhone({ ...editPhone, [f.key]: e.target.value || null })}
                       />

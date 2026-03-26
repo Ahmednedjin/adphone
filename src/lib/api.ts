@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 export type DbPhone = {
   id: string;
   slug: string;
@@ -94,94 +92,107 @@ export type DbPhoneImage = {
   sort_order: number | null;
 };
 
-// Fetch all brands
+async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || res.statusText);
+  }
+  return res.json();
+}
+
 export async function fetchBrands(): Promise<DbBrand[]> {
-  const { data, error } = await supabase
-    .from("brands")
-    .select("*")
-    .order("name");
-  if (error) throw error;
-  return data || [];
+  return apiFetch<DbBrand[]>("/api/brands");
 }
 
-// Fetch phones with brand info
 export async function fetchPhones(limit = 50): Promise<DbPhone[]> {
-  const { data, error } = await supabase
-    .from("phones")
-    .select("*, brands(*)")
-    .eq("status", "published")
-    .order("year", { ascending: false })
-    .order("name")
-    .limit(limit);
-  if (error) throw error;
-  return data || [];
+  return apiFetch<DbPhone[]>(`/api/phones?limit=${limit}`);
 }
 
-// Fetch phones by brand
 export async function fetchPhonesByBrand(brandSlug: string): Promise<{ brand: DbBrand | null; phones: DbPhone[] }> {
-  const { data: brand } = await supabase
-    .from("brands")
-    .select("*")
-    .eq("slug", brandSlug)
-    .single();
-
-  if (!brand) return { brand: null, phones: [] };
-
-  const { data: phones, error } = await supabase
-    .from("phones")
-    .select("*, brands(*)")
-    .eq("brand_id", brand.id)
-    .eq("status", "published")
-    .order("year", { ascending: false })
-    .order("name");
-  if (error) throw error;
-  return { brand, phones: phones || [] };
+  try {
+    return await apiFetch<{ brand: DbBrand; phones: DbPhone[] }>(`/api/phones/brand/${brandSlug}`);
+  } catch {
+    return { brand: null, phones: [] };
+  }
 }
 
-// Fetch single phone by slug
 export async function fetchPhoneBySlug(slug: string): Promise<DbPhone | null> {
-  const { data, error } = await supabase
-    .from("phones")
-    .select("*, brands(*)")
-    .eq("slug", slug)
-    .eq("status", "published")
-    .single();
-  if (error) return null;
-  return data;
+  try {
+    return await apiFetch<DbPhone>(`/api/phones/slug/${slug}`);
+  } catch {
+    return null;
+  }
 }
 
-// Fetch phone images
 export async function fetchPhoneImages(phoneId: string): Promise<DbPhoneImage[]> {
-  const { data, error } = await supabase
-    .from("phone_images")
-    .select("*")
-    .eq("phone_id", phoneId)
-    .order("sort_order");
-  if (error) throw error;
-  return data || [];
+  return apiFetch<DbPhoneImage[]>(`/api/phones/images/${phoneId}`);
 }
 
-// Search phones
 export async function searchPhones(query: string): Promise<DbPhone[]> {
-  const { data, error } = await supabase
-    .from("phones")
-    .select("*, brands(*)")
-    .eq("status", "published")
-    .or(`name.ilike.%${query}%,name_ar.ilike.%${query}%`)
-    .limit(20);
-  if (error) throw error;
-  return data || [];
+  return apiFetch<DbPhone[]>(`/api/search?q=${encodeURIComponent(query)}`);
 }
 
-// Fetch similar phones
 export async function fetchSimilarPhones(phone: DbPhone): Promise<DbPhone[]> {
-  const { data, error } = await supabase
-    .from("phones")
-    .select("*, brands(*)")
-    .eq("status", "published")
-    .eq("brand_id", phone.brand_id)
-    .neq("id", phone.id)
-    .limit(8);
-  if (error) throw error;
-  return data || [];
+  return apiFetch<DbPhone[]>(`/api/phones/similar/${phone.id}?brandId=${phone.brand_id}`);
+}
+
+export async function aiSearch(query: string, imageBase64?: string): Promise<{ correctedName: string; corrected: boolean; phones: DbPhone[] }> {
+  return apiFetch("/api/ai/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, imageBase64 }),
+  });
+}
+
+export async function aiPhoneSpecs(phoneName: string, imageBase64?: string): Promise<{ specs: Partial<DbPhone> }> {
+  return apiFetch("/api/ai/phone-specs", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ phoneName, imageBase64 }),
+  });
+}
+
+export async function adminLogin(email: string, password: string): Promise<{ success: boolean; email: string }> {
+  return apiFetch("/api/auth/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function adminLogout(): Promise<void> {
+  await apiFetch("/api/auth/logout", { method: "POST" });
+}
+
+export async function getMe(): Promise<{ id: string; email: string } | null> {
+  try {
+    return await apiFetch<{ id: string; email: string }>("/api/auth/me");
+  } catch {
+    return null;
+  }
+}
+
+export async function adminFetchPhones(): Promise<DbPhone[]> {
+  return apiFetch<DbPhone[]>("/api/admin/phones");
+}
+
+export async function adminCreatePhone(data: Partial<DbPhone>): Promise<DbPhone> {
+  return apiFetch<DbPhone>("/api/admin/phones", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminUpdatePhone(id: string, data: Partial<DbPhone>): Promise<DbPhone> {
+  return apiFetch<DbPhone>(`/api/admin/phones/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeletePhone(id: string): Promise<void> {
+  await apiFetch(`/api/admin/phones/${id}`, { method: "DELETE" });
 }

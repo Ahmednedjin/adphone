@@ -1,9 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useRef, useCallback } from "react";
-import { Search, Camera, Menu, X } from "lucide-react";
+import { Search, Menu, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { searchPhones, type DbPhone } from "@/lib/api";
-import { supabase } from "@/integrations/supabase/client";
+import { searchPhones, aiSearch, type DbPhone } from "@/lib/api";
 import logo from "@/assets/logo.png";
 
 const navItems = [
@@ -27,8 +26,7 @@ const SiteHeader = () => {
 
   const doSearch = useCallback(async (val: string) => {
     if (val.length < 2) { setResults([]); setCorrectedName(null); return; }
-    
-    // Always search DB first
+
     const dbResults = await searchPhones(val);
     if (dbResults.length > 0) {
       setResults(dbResults);
@@ -36,22 +34,16 @@ const SiteHeader = () => {
       return;
     }
 
-    // Only call AI if no DB results AND enough time has passed (5s cooldown)
     const now = Date.now();
-    if (now - lastAiCallRef.current < 5000) {
-      setResults([]);
-      return;
-    }
-
-    // Only call AI for queries >= 4 chars to avoid noise
+    if (now - lastAiCallRef.current < 5000) { setResults([]); return; }
     if (val.length < 4) { setResults([]); return; }
 
     lastAiCallRef.current = now;
     setAiSearching(true);
     try {
-      const { data } = await supabase.functions.invoke("ai-search", { body: { query: val } });
-      setResults(data?.phones || []);
-      if (data?.corrected) setCorrectedName(data.correctedName);
+      const data = await aiSearch(val);
+      setResults(data.phones || []);
+      if (data.corrected) setCorrectedName(data.correctedName);
       else setCorrectedName(null);
     } catch {
       setResults([]);
@@ -74,7 +66,6 @@ const SiteHeader = () => {
           <span className="font-bold text-lg text-foreground hidden sm:inline">AD Phone</span>
         </Link>
 
-        {/* Desktop search */}
         <div className="relative flex-1 max-w-md hidden md:block">
           <div className="flex items-center bg-secondary rounded-lg px-3 py-2 gap-2">
             <Search className="w-4 h-4 text-muted-foreground shrink-0" />
@@ -90,7 +81,7 @@ const SiteHeader = () => {
           </div>
           {showResults && (results.length > 0 || aiSearching || correctedName) && (
             <div className="absolute top-full mt-1 left-0 right-0 bg-card border border-border rounded-xl shadow-lg z-50 max-h-72 overflow-auto">
-              {aiSearching && <p className="px-4 py-2 text-sm text-muted-foreground">🔍 جاري البحث الذكي...</p>}
+              {aiSearching && <p className="px-4 py-2 text-sm text-muted-foreground">جاري البحث الذكي...</p>}
               {correctedName && <p className="px-4 py-1.5 text-xs text-primary">هل تقصد: {correctedName}؟</p>}
               {results.map((phone: any) => (
                 <button
@@ -122,7 +113,6 @@ const SiteHeader = () => {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {mobileMenu && (
         <div className="md:hidden border-t border-border bg-card p-4 space-y-3">
           <div className="flex items-center bg-secondary rounded-lg px-3 py-2 gap-2">

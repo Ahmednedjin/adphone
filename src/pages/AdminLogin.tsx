@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { adminLogin } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -15,27 +15,13 @@ const AdminLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      toast({ title: "خطأ في تسجيل الدخول", description: error.message, variant: "destructive" });
-      setLoading(false);
-      return;
+    try {
+      await adminLogin(email, password);
+      navigate("/admin");
+    } catch (err: any) {
+      toast({ title: "خطأ في تسجيل الدخول", description: err.message, variant: "destructive" });
     }
-    // Check admin role
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast({ title: "خطأ", description: "لم يتم العثور على المستخدم", variant: "destructive" });
-      setLoading(false);
-      return;
-    }
-    const { data: roleData } = await supabase.from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").single();
-    if (!roleData) {
-      await supabase.auth.signOut();
-      toast({ title: "غير مصرح", description: "ليس لديك صلاحيات المدير", variant: "destructive" });
-      setLoading(false);
-      return;
-    }
-    navigate("/admin");
+    setLoading(false);
   };
 
   return (
