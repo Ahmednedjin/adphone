@@ -47,8 +47,8 @@ const AdminPanel = () => {
   const handleDelete = async (id: string) => {
     if (!confirm("هل تريد حذف هذا الهاتف؟")) return;
     try {
-      await adminDeletePhone(id);
-      toast({ title: "تم الحذف" });
+      const { error } = await supabase.from("phones").delete().eq("id", id);
+      if (error) throw error;
       loadData();
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
