@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
-  getMe, adminLogout, adminFetchPhones, adminCreatePhone, adminUpdatePhone, adminDeletePhone,
-  fetchBrands, aiPhoneSpecs, type DbPhone, type DbBrand
+  fetchPhones, fetchBrands, aiPhoneSpecs, type DbPhone, type DbBrand
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,29 +25,30 @@ const AdminPanel = () => {
   }, []);
 
   const checkAdmin = async () => {
-    const me = await getMe();
-    if (!me) { navigate("/admin-login"); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/admin-login"); return; }
     setIsAdmin(true);
     loadData();
   };
 
   const loadData = async () => {
     setLoading(true);
-    const [phonesData, brandsData] = await Promise.all([adminFetchPhones(), fetchBrands()]);
+    const [phonesData, brandsData] = await Promise.all([fetchPhones(500), fetchBrands()]);
     setPhones(phonesData);
     setBrands(brandsData);
     setLoading(false);
   };
 
   const handleLogout = async () => {
-    await adminLogout();
+    await supabase.auth.signOut();
     navigate("/admin-login");
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("هل تريد حذف هذا الهاتف؟")) return;
     try {
-      await adminDeletePhone(id);
+      const { error } = await supabase.from("phones").delete().eq("id", id);
+      if (error) throw error;
       toast({ title: "تم الحذف" });
       loadData();
     } catch (err: any) {
@@ -76,10 +77,13 @@ const AdminPanel = () => {
     const isNew = !editPhone.id || editPhone.id === "new";
     try {
       if (isNew) {
-        const { id: _id, brands: _b, ...phoneData } = editPhone as any;
-        await adminCreatePhone(phoneData);
+        const { id: _id, brands: _b, created_at: _c, updated_at: _u, ...phoneData } = editPhone as any;
+        const { error } = await supabase.from("phones").insert(phoneData);
+        if (error) throw error;
       } else {
-        await adminUpdatePhone(editPhone.id, editPhone);
+        const { brands: _b, created_at: _c, updated_at: _u, ...phoneData } = editPhone as any;
+        const { error } = await supabase.from("phones").update(phoneData).eq("id", editPhone.id);
+        if (error) throw error;
       }
       toast({ title: isNew ? "تمت الإضافة ✓" : "تم التحديث ✓" });
       setShowForm(false);
