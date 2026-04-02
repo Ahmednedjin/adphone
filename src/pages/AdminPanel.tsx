@@ -76,10 +76,13 @@ const AdminPanel = () => {
     const isNew = !editPhone.id || editPhone.id === "new";
     try {
       if (isNew) {
-        const { id: _id, brands: _b, ...phoneData } = editPhone as any;
-        await adminCreatePhone(phoneData);
+        const { id: _id, brands: _b, created_at: _c, updated_at: _u, ...phoneData } = editPhone as any;
+        const { error } = await supabase.from("phones").insert(phoneData);
+        if (error) throw error;
       } else {
-        await adminUpdatePhone(editPhone.id, editPhone);
+        const { brands: _b, created_at: _c, updated_at: _u, ...phoneData } = editPhone as any;
+        const { error } = await supabase.from("phones").update(phoneData).eq("id", editPhone.id);
+        if (error) throw error;
       }
       toast({ title: isNew ? "تمت الإضافة ✓" : "تم التحديث ✓" });
       setShowForm(false);
