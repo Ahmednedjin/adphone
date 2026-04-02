@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import {
-  getMe, adminLogout, adminFetchPhones, adminCreatePhone, adminUpdatePhone, adminDeletePhone,
-  fetchBrands, aiPhoneSpecs, type DbPhone, type DbBrand
+  fetchPhones, fetchBrands, aiPhoneSpecs, type DbPhone, type DbBrand
 } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
