@@ -8,6 +8,7 @@
     "dev:server": "tsx server/index.ts",
     "dev:client": "vite",
     "build": "vite build && tsx server/build.ts",
+    "build:dev": "vite build",
     "build:client": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
