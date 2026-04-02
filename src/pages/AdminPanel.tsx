@@ -49,6 +49,7 @@ const AdminPanel = () => {
     try {
       const { error } = await supabase.from("phones").delete().eq("id", id);
       if (error) throw error;
+      toast({ title: "تم الحذف" });
       loadData();
     } catch (err: any) {
       toast({ title: "خطأ", description: err.message, variant: "destructive" });
