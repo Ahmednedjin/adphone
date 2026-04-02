@@ -25,22 +25,22 @@ const AdminPanel = () => {
   }, []);
 
   const checkAdmin = async () => {
-    const me = await getMe();
-    if (!me) { navigate("/admin-login"); return; }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { navigate("/admin-login"); return; }
     setIsAdmin(true);
     loadData();
   };
 
   const loadData = async () => {
     setLoading(true);
-    const [phonesData, brandsData] = await Promise.all([adminFetchPhones(), fetchBrands()]);
+    const [phonesData, brandsData] = await Promise.all([fetchPhones(500), fetchBrands()]);
     setPhones(phonesData);
     setBrands(brandsData);
     setLoading(false);
   };
 
   const handleLogout = async () => {
-    await adminLogout();
+    await supabase.auth.signOut();
     navigate("/admin-login");
   };
 
