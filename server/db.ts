@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, and, like } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, phones, InsertPhone } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -87,6 +87,137 @@ export async function getUserByOpenId(openId: string) {
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
 
   return result.length > 0 ? result[0] : undefined;
+}
+
+/**
+ * Get all phones with optional filtering
+ */
+export async function getAllPhones(filter?: { brand?: string; model?: string }) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get phones: database not available");
+    return [];
+  }
+
+  try {
+    let conditions = [];
+    if (filter?.brand && filter.brand.trim()) {
+      // Use LIKE for partial matching
+      conditions.push(like(phones.brand, `%${filter.brand.trim()}%`));
+    }
+    if (filter?.model && filter.model.trim()) {
+      // Use LIKE for partial matching
+      conditions.push(like(phones.model, `%${filter.model.trim()}%`));
+    }
+
+    const query = conditions.length > 0 
+      ? db.select().from(phones).where(and(...conditions))
+      : db.select().from(phones);
+
+    return await query;
+  } catch (error) {
+    console.error("[Database] Failed to get phones:", error);
+    return [];
+  }
+}
+
+/**
+ * Get a single phone by ID
+ */
+export async function getPhoneById(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get phone: database not available");
+    return undefined;
+  }
+
+  try {
+    const result = await db.select().from(phones).where(eq(phones.id, id)).limit(1);
+    return result.length > 0 ? result[0] : undefined;
+  } catch (error) {
+    console.error("[Database] Failed to get phone:", error);
+    return undefined;
+  }
+}
+
+/**
+ * Check if a phone already exists by brand and model
+ */
+export async function phoneExists(brand: string, model: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot check phone existence: database not available");
+    return false;
+  }
+
+  try {
+    const result = await db
+      .select()
+      .from(phones)
+      .where(and(eq(phones.brand, brand), eq(phones.model, model)))
+      .limit(1);
+    return result.length > 0;
+  } catch (error) {
+    console.error("[Database] Failed to check phone existence:", error);
+    return false;
+  }
+}
+
+/**
+ * Insert a new phone
+ */
+export async function insertPhone(phone: InsertPhone) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot insert phone: database not available");
+    return undefined;
+  }
+
+  try {
+    const result = await db.insert(phones).values(phone);
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to insert phone:", error);
+    throw error;
+  }
+}
+
+/**
+ * Update an existing phone
+ */
+export async function updatePhone(id: number, updates: Partial<InsertPhone>) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update phone: database not available");
+    return undefined;
+  }
+
+  try {
+    const result = await db.update(phones).set(updates).where(eq(phones.id, id));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to update phone:", error);
+    throw error;
+  }
+}
+
+/**
+ * Delete a phone
+ */
+export async function deletePhone(id: number) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete phone: database not available");
+    return undefined;
+  }
+
+  try {
+    const result = await db.delete(phones).where(eq(phones.id, id));
+    return result;
+  } catch (error) {
+    console.error("[Database] Failed to delete phone:", error);
+    throw error;
+  }
 }
 
 // TODO: add feature queries here as your schema grows.

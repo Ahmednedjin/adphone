@@ -25,4 +25,21 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
+/**
+ * Phones table for storing smartphone specifications and details
+ * Stores brand, model, comprehensive specs in JSONB format, and image URL
+ */
+export const phones = mysqlTable("phones", {
+  id: int("id").autoincrement().primaryKey(),
+  brand: varchar("brand", { length: 100 }).notNull(),
+  model: varchar("model", { length: 100 }).notNull(),
+  specs: text("specs").notNull(), // JSON string for JSONB-like storage
+  imageUrl: varchar("image_url", { length: 500 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Phone = typeof phones.$inferSelect;
+export type InsertPhone = typeof phones.$inferInsert;
+
 // TODO: Add your tables here
