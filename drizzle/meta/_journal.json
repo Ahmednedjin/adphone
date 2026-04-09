@@ -15,6 +15,13 @@
       "when": 1775646099805,
       "tag": "0001_productive_scream",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775731651741,
+      "tag": "0002_unusual_killmonger",
+      "breakpoints": true
     }
   ]
 }

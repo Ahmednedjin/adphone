@@ -13,8 +13,22 @@ export const users = mysqlTable("users", {
   id: int("id").autoincrement().primaryKey(),
   /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
+  /** Username for login */
+  username: varchar("username", { length: 50 }).unique(),
+  /** Password hash */
+  passwordHash: text("password_hash"),
   name: text("name"),
   email: varchar("email", { length: 320 }),
+  /** Phone number for verification */
+  phone: varchar("phone", { length: 20 }),
+  /** Email verification status */
+  emailVerified: timestamp("email_verified"),
+  /** Phone verification status */
+  phoneVerified: timestamp("phone_verified"),
+  /** Email verification token */
+  emailVerificationToken: varchar("email_verification_token", { length: 255 }),
+  /** Phone verification code */
+  phoneVerificationCode: varchar("phone_verification_code", { length: 10 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
   role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

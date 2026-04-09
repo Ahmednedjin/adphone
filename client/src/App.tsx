@@ -7,12 +7,16 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
+import UserLogin from "./pages/UserLogin";
+import UserSettings from "./pages/UserSettings";
 import PhoneDetails from "./pages/PhoneDetails";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/login"} component={UserLogin} />
+      <Route path={"/settings"} component={UserSettings} />
       <Route path={"/admin/login"} component={AdminLogin} />
       <Route path={"/admin/*"} component={AdminDashboard} />
       <Route path={"/phone/:id"} component={PhoneDetails} />
