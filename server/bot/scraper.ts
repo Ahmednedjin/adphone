@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getDb } from "../db";
-import { phones } from "../drizzle/schema";
+import { phones } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
 
 const API_KEY = process.env.MOBILE_API_KEY!;
