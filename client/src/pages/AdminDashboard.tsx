@@ -63,21 +63,21 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Phone Management Dashboard</h1>
-          <p className="text-slate-600">Manage and organize your phone database</p>
+          <h1 className="text-4xl font-bold text-foreground mb-2">Phone Management Dashboard</h1>
+          <p className="text-muted-foreground">Manage and organize your phone database</p>
         </div>
 
         {/* Search and Add Button */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex gap-3 flex-1">
             <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700 mb-1 block">Search by Brand</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">Search by Brand</label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="e.g., Apple, Samsung..."
                   value={searchBrand}
@@ -87,9 +87,9 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700 mb-1 block">Search by Model</label>
+              <label className="text-sm font-medium text-foreground mb-1 block">Search by Model</label>
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="e.g., iPhone 15..."
                   value={searchModel}
@@ -101,7 +101,7 @@ export default function AdminDashboard() {
           </div>
           <Button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="gap-2 bg-blue-600 hover:bg-blue-700"
+            className="gap-2 bg-primary hover:opacity-90 text-primary-foreground"
           >
             <Plus className="h-4 w-4" />
             Add Phone
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
 
         {/* Add Phone Form */}
         {showAddForm && (
-          <Card className="mb-6 border-blue-200 bg-blue-50">
+          <Card className="mb-6 border-primary/20 bg-card">
             <CardHeader>
               <CardTitle>Add New Phone</CardTitle>
             </CardHeader>
@@ -136,25 +136,25 @@ export default function AdminDashboard() {
           <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               </div>
             ) : phones && phones.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="px-4 py-3 text-left font-semibold text-slate-900">Brand</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-900">Model</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-900">Added</th>
-                      <th className="px-4 py-3 text-right font-semibold text-slate-900">Actions</th>
+                    <tr className="border-b border-border bg-muted">
+                      <th className="px-4 py-3 text-left font-semibold text-foreground">Brand</th>
+                      <th className="px-4 py-3 text-left font-semibold text-foreground">Model</th>
+                      <th className="px-4 py-3 text-left font-semibold text-foreground">Added</th>
+                      <th className="px-4 py-3 text-right font-semibold text-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {phones.map((phone) => (
-                      <tr key={phone.id} className="border-b border-slate-100 hover:bg-slate-50">
-                        <td className="px-4 py-3 text-slate-900 font-medium">{phone.brand}</td>
-                        <td className="px-4 py-3 text-slate-700">{phone.model}</td>
-                        <td className="px-4 py-3 text-slate-600 text-xs">
+                      <tr key={phone.id} className="border-b border-border hover:bg-accent/50">
+                        <td className="px-4 py-3 text-foreground font-medium">{phone.brand}</td>
+                        <td className="px-4 py-3 text-foreground">{phone.model}</td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">
                           {new Date(phone.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3 text-right">
@@ -187,7 +187,7 @@ export default function AdminDashboard() {
               </div>
             ) : (
               <div className="text-center py-12">
-                <p className="text-slate-500">No phones found. Add your first phone!</p>
+                <p className="text-muted-foreground">No phones found. Add your first phone!</p>
               </div>
             )}
           </CardContent>
