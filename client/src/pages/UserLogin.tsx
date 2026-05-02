@@ -76,8 +76,8 @@ export default function UserLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <User className="h-6 w-6 text-blue-600" />
+            <div className="bg-muted p-3 rounded-full">
+              <User className="h-6 w-6 text-primary" />
             </div>
           </div>
           <CardTitle className="text-2xl">مراجعة الهواتف</CardTitle>
@@ -94,7 +94,7 @@ export default function UserLogin() {
             <TabsContent value="login" className="space-y-4">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     اسم المستخدم
                   </label>
                   <Input
@@ -111,7 +111,7 @@ export default function UserLogin() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     كلمة المرور
                   </label>
                   <Input
@@ -137,7 +137,7 @@ export default function UserLogin() {
                 <Button
                   type="submit"
                   disabled={loginLoading || !loginUsername || !loginPassword}
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className="w-full bg-primary hover:opacity-90 text-primary-foreground"
                 >
                   {loginLoading ? "جاري التحميل..." : "دخول"}
                 </Button>
@@ -148,7 +148,7 @@ export default function UserLogin() {
             <TabsContent value="register" className="space-y-4">
               <form onSubmit={handleRegister} className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     اسم المستخدم
                   </label>
                   <Input
@@ -165,7 +165,7 @@ export default function UserLogin() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     البريد الإلكتروني
                   </label>
                   <Input
@@ -182,7 +182,7 @@ export default function UserLogin() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     رقم الهاتف (اختياري)
                   </label>
                   <Input
@@ -199,7 +199,7 @@ export default function UserLogin() {
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium text-slate-700 mb-1 block">
+                  <label className="text-sm font-medium text-foreground mb-1 block">
                     كلمة المرور
                   </label>
                   <Input

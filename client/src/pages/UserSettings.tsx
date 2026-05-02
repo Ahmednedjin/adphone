@@ -117,11 +117,11 @@ export default function UserSettings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900">إعدادات الحساب</h1>
-          <p className="text-slate-600 mt-2">إدارة بيانات حسابك والتحقق من هويتك</p>
+          <h1 className="text-3xl font-bold text-foreground">إعدادات الحساب</h1>
+          <p className="text-muted-foreground mt-2">إدارة بيانات حسابك والتحقق من هويتك</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -141,7 +141,7 @@ export default function UserSettings() {
               <CardContent>
                 <form onSubmit={handleUpdateProfile} className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                    <label className="text-sm font-medium text-foreground mb-1 block">
                       اسم المستخدم
                     </label>
                     <Input
@@ -154,7 +154,7 @@ export default function UserSettings() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                    <label className="text-sm font-medium text-foreground mb-1 block">
                       البريد الإلكتروني
                     </label>
                     <Input
@@ -167,7 +167,7 @@ export default function UserSettings() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                    <label className="text-sm font-medium text-foreground mb-1 block">
                       رقم الهاتف
                     </label>
                     <Input
@@ -189,7 +189,7 @@ export default function UserSettings() {
                   <Button
                     type="submit"
                     disabled={profileLoading}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-primary hover:opacity-90 text-primary-foreground"
                   >
                     {profileLoading ? "جاري التحديث..." : "حفظ التغييرات"}
                   </Button>
@@ -209,8 +209,8 @@ export default function UserSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                  <span className="text-sm text-slate-600">{email}</span>
+                <div className="flex items-center justify-between p-3 bg-muted rounded-md">
+                  <span className="text-sm text-muted-foreground">{email}</span>
                   {emailVerified ? (
                     <div className="flex items-center gap-1 text-green-600">
                       <CheckCircle className="h-4 w-4" />
@@ -259,8 +259,8 @@ export default function UserSettings() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-md">
-                  <span className="text-sm text-slate-600">{phone}</span>
+                <div className="flex items-center justify-between p-3 bg-muted rounded-md">
+                  <span className="text-sm text-muted-foreground">{phone}</span>
                   {phoneVerified ? (
                     <div className="flex items-center gap-1 text-green-600">
                       <CheckCircle className="h-4 w-4" />
@@ -314,7 +314,7 @@ export default function UserSettings() {
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                    <label className="text-sm font-medium text-foreground mb-1 block">
                       كلمة المرور الحالية
                     </label>
                     <Input
@@ -328,7 +328,7 @@ export default function UserSettings() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                    <label className="text-sm font-medium text-foreground mb-1 block">
                       كلمة المرور الجديدة
                     </label>
                     <Input
@@ -342,7 +342,7 @@ export default function UserSettings() {
                   </div>
 
                   <div>
-                    <label className="text-sm font-medium text-slate-700 mb-1 block">
+                    <label className="text-sm font-medium text-foreground mb-1 block">
                       تأكيد كلمة المرور
                     </label>
                     <Input
@@ -365,7 +365,7 @@ export default function UserSettings() {
                   <Button
                     type="submit"
                     disabled={passwordLoading || !currentPassword || !newPassword || !confirmPassword}
-                    className="w-full bg-blue-600 hover:bg-blue-700"
+                    className="w-full bg-primary hover:opacity-90 text-primary-foreground"
                   >
                     {passwordLoading ? "جاري التحديث..." : "تغيير كلمة المرور"}
                   </Button>

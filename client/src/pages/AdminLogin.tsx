@@ -35,12 +35,12 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-100 p-3 rounded-full">
-              <Lock className="h-6 w-6 text-blue-600" />
+            <div className="bg-muted p-3 rounded-full">
+              <Lock className="h-6 w-6 text-primary" />
             </div>
           </div>
           <CardTitle className="text-2xl">Admin Dashboard</CardTitle>
@@ -49,7 +49,7 @@ export default function AdminLogin() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-slate-700 mb-1 block">
+              <label className="text-sm font-medium text-foreground mb-1 block">
                 Admin Password
               </label>
               <Input
@@ -75,12 +75,12 @@ export default function AdminLogin() {
             <Button
               type="submit"
               disabled={isLoading || !password}
-              className="w-full bg-blue-600 hover:bg-blue-700"
+              className="w-full bg-primary hover:opacity-90 text-primary-foreground"
             >
               {isLoading ? "Logging in..." : "Login"}
             </Button>
 
-            <p className="text-xs text-slate-500 text-center mt-4">
+            <p className="text-xs text-muted-foreground text-center mt-4">
               For security, this is a demo password. In production, use OAuth or proper authentication.
             </p>
           </form>
