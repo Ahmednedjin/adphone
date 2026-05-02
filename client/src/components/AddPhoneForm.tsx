@@ -54,7 +54,7 @@ export default function AddPhoneForm({ onSuccess }: AddPhoneFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="text-sm font-medium text-slate-700 mb-1 block">Brand *</label>
+        <label className="text-sm font-medium text-foreground mb-1 block">Brand *</label>
         <Input
           placeholder="e.g., Apple, Samsung, Xiaomi"
           value={brand}
@@ -64,7 +64,7 @@ export default function AddPhoneForm({ onSuccess }: AddPhoneFormProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-slate-700 mb-1 block">Model *</label>
+        <label className="text-sm font-medium text-foreground mb-1 block">Model *</label>
         <Input
           placeholder="e.g., iPhone 15 Pro, Galaxy S24"
           value={model}
@@ -74,7 +74,7 @@ export default function AddPhoneForm({ onSuccess }: AddPhoneFormProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-slate-700 mb-1 block">Specifications (JSON) *</label>
+        <label className="text-sm font-medium text-foreground mb-1 block">Specifications (JSON) *</label>
         <Textarea
           placeholder={`{
   "processor": "A17 Pro",
@@ -91,7 +91,7 @@ export default function AddPhoneForm({ onSuccess }: AddPhoneFormProps) {
       </div>
 
       <div>
-        <label className="text-sm font-medium text-slate-700 mb-1 block">Image URL</label>
+        <label className="text-sm font-medium text-foreground mb-1 block">Image URL</label>
         <Input
           placeholder="https://example.com/phone.jpg"
           value={imageUrl}
