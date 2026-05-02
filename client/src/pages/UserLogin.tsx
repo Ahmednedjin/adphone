@@ -72,7 +72,7 @@ export default function UserLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -225,7 +225,7 @@ export default function UserLogin() {
                 <Button
                   type="submit"
                   disabled={regLoading || !regUsername || !regPassword || !regEmail}
-                  className="w-full bg-green-600 hover:bg-green-700"
+                  className="w-full bg-primary hover:opacity-90 text-primary-foreground"
                 >
                   {regLoading ? "جاري التحميل..." : "إنشاء حساب"}
                 </Button>
