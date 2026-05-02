@@ -21,7 +21,22 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
+  
+  // Only catch SPA navigation routes (not API routes)
+  app.use((req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+    next();
+  });
+  
   app.use("*", async (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+    
     const url = req.originalUrl;
 
     try {

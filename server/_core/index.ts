@@ -35,7 +35,7 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
-  // tRPC API
+  // tRPC API - MUST be registered BEFORE the vite/static middleware
   app.use(
     "/api/trpc",
     createExpressMiddleware({

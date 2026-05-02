@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { Search, Smartphone, ChevronDown } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 const BRANDS = [
   { name: "Samsung", logo: "https://logo.clearbit.com/samsung.com", slug: "Samsung" },
@@ -20,24 +21,11 @@ const BRANDS = [
 export default function Home() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
-  const [phones, setPhones] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [showBrands, setShowBrands] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/phones")
-      .then(r => r.json())
-      .then(data => {
-        setPhones(data);
-        setFiltered(data);
-        setLoading(false);
-      })
-      .catch(err => {
-        console.error("[v0] Error fetching phones:", err);
-        setLoading(false);
-      });
-  }, []);
+  // Use tRPC to fetch phones
+  const { data: phones = [], isLoading } = trpc.phones.list.useQuery();
 
   useEffect(() => {
     if (!search.trim()) {
@@ -135,7 +123,7 @@ export default function Home() {
         {search && <h2 className="text-lg font-bold mb-5">نتائج البحث ({filtered.length})</h2>}
         {!search && <h2 className="text-lg font-bold mb-5">أحدث الهواتف</h2>}
 
-        {loading ? (
+        {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-muted rounded-lg h-48 animate-pulse" />
