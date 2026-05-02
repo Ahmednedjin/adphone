@@ -180,9 +180,9 @@ export default function UserSettings() {
                   </div>
 
                   {profileError && (
-                    <div className="flex gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                      <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-red-600">{profileError}</p>
+                    <div className="flex gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                      <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{profileError}</p>
                     </div>
                   )}
 
@@ -356,9 +356,9 @@ export default function UserSettings() {
                   </div>
 
                   {passwordError && (
-                    <div className="flex gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                      <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-red-600">{passwordError}</p>
+                    <div className="flex gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded-md">
+                      <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-destructive">{passwordError}</p>
                     </div>
                   )}
 
