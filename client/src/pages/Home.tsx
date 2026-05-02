@@ -33,7 +33,10 @@ export default function Home() {
         setFiltered(data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(err => {
+        console.error("[v0] Error fetching phones:", err);
+        setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -51,19 +54,21 @@ export default function Home() {
   }, [search, phones]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
 
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex flex-col gap-3">
+      <nav className="sticky top-0 z-50 bg-card border-b border-border px-4 py-3 shadow-sm">
+        <div className="max-w-6xl mx-auto flex flex-col gap-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Smartphone className="text-blue-500" size={24} />
-              <span className="text-xl font-bold text-white">AdPhone</span>
+            <div className="flex items-center gap-3">
+              <div className="bg-primary p-2 rounded-lg">
+                <Smartphone className="text-primary-foreground" size={24} />
+              </div>
+              <span className="text-2xl font-bold">AdPhone</span>
             </div>
             <button
               onClick={() => setShowBrands(!showBrands)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
+              className="flex items-center gap-2 bg-primary text-primary-foreground hover:opacity-90 px-4 py-2 rounded-lg text-sm font-medium transition-opacity"
             >
               الشركات
               <ChevronDown size={16} className={`transition-transform ${showBrands ? "rotate-180" : ""}`} />
@@ -72,28 +77,28 @@ export default function Home() {
 
           {/* SEARCH BAR */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <input
               type="text"
               placeholder="ابحث عن هاتف... Samsung, iPhone, Xiaomi"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500"
+              className="w-full bg-input border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring placeholder-muted-foreground"
             />
           </div>
         </div>
 
         {/* BRANDS DROPDOWN */}
         {showBrands && (
-          <div className="max-w-6xl mx-auto mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 pb-3">
+          <div className="max-w-6xl mx-auto mt-4 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 pb-3">
             {BRANDS.map(brand => (
               <button
                 key={brand.slug}
                 onClick={() => { navigate(`/brand/${brand.slug}`); setShowBrands(false); }}
-                className="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl p-3 transition"
+                className="flex flex-col items-center gap-2 bg-card hover:bg-accent border border-border rounded-lg p-3 transition-colors"
               >
-                <img src={brand.logo} alt={brand.name} className="w-10 h-10 object-contain rounded-lg" onError={e => (e.currentTarget.src = "https://via.placeholder.com/40")} />
-                <span className="text-xs text-gray-300">{brand.name}</span>
+                <img src={brand.logo} alt={brand.name} className="w-10 h-10 object-contain" onError={e => (e.currentTarget.src = "https://via.placeholder.com/40")} />
+                <span className="text-xs font-medium">{brand.name}</span>
               </button>
             ))}
           </div>
@@ -101,24 +106,24 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <div className="max-w-6xl mx-auto px-4 py-10 text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">مواصفات كل الهواتف</h1>
-        <p className="text-gray-400 text-sm">ابحث وقارن بين أحدث الهواتف الذكية</p>
+      <div className="max-w-6xl mx-auto w-full px-4 py-12 text-center">
+        <h1 className="text-4xl font-bold mb-3">مواصفات كل الهواتف</h1>
+        <p className="text-muted-foreground text-base">ابحث وقارن بين أحدث الهواتف الذكية بسهولة</p>
       </div>
 
       {/* BRANDS GRID - shown when no search */}
       {!search && (
-        <div className="max-w-6xl mx-auto px-4 mb-10">
-          <h2 className="text-lg font-bold mb-4 text-gray-200">الشركات</h2>
+        <div className="max-w-6xl mx-auto w-full px-4 mb-12">
+          <h2 className="text-xl font-bold mb-5">الشركات الرائدة</h2>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
             {BRANDS.map(brand => (
               <button
                 key={brand.slug}
                 onClick={() => navigate(`/brand/${brand.slug}`)}
-                className="flex flex-col items-center gap-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-2xl p-4 transition"
+                className="flex flex-col items-center gap-3 bg-card hover:bg-accent border border-border rounded-xl p-4 transition-colors"
               >
                 <img src={brand.logo} alt={brand.name} className="w-12 h-12 object-contain" onError={e => (e.currentTarget.src = "https://via.placeholder.com/48")} />
-                <span className="text-xs text-gray-300 font-medium">{brand.name}</span>
+                <span className="text-sm font-medium text-center">{brand.name}</span>
               </button>
             ))}
           </div>
@@ -126,36 +131,36 @@ export default function Home() {
       )}
 
       {/* PHONES GRID */}
-      <div className="max-w-6xl mx-auto px-4 pb-16">
-        {search && <h2 className="text-lg font-bold mb-4 text-gray-200">نتائج البحث ({filtered.length})</h2>}
-        {!search && <h2 className="text-lg font-bold mb-4 text-gray-200">أحدث الهواتف</h2>}
+      <div className="max-w-6xl mx-auto w-full px-4 pb-16 flex-grow">
+        {search && <h2 className="text-lg font-bold mb-5">نتائج البحث ({filtered.length})</h2>}
+        {!search && <h2 className="text-lg font-bold mb-5">أحدث الهواتف</h2>}
 
         {loading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-gray-900 rounded-2xl h-48 animate-pulse" />
+              <div key={i} className="bg-muted rounded-lg h-48 animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">لم يتم العثور على هواتف</div>
+          <div className="text-center text-muted-foreground py-20">لم يتم العثور على هواتف</div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {filtered.slice(0, 20).map(phone => (
               <button
                 key={phone.id}
                 onClick={() => navigate(`/phone/${phone.id}`)}
-                className="bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-2xl p-4 text-left transition flex flex-col gap-2"
+                className="bg-card hover:bg-accent border border-border rounded-lg p-4 text-left transition-colors flex flex-col gap-3"
               >
                 {phone.imageUrl ? (
                   <img src={phone.imageUrl} alt={phone.model} className="w-full h-32 object-contain" />
                 ) : (
-                  <div className="w-full h-32 flex items-center justify-center">
-                    <Smartphone className="text-gray-700" size={48} />
+                  <div className="w-full h-32 flex items-center justify-center bg-muted rounded">
+                    <Smartphone className="text-muted-foreground" size={48} />
                   </div>
                 )}
-                <div>
-                  <p className="text-xs text-blue-400 font-medium">{phone.brand}</p>
-                  <p className="text-sm font-bold text-white truncate">{phone.model}</p>
+                <div className="flex-1">
+                  <p className="text-xs text-primary font-medium">{phone.brand}</p>
+                  <p className="text-sm font-bold truncate">{phone.model}</p>
                 </div>
               </button>
             ))}
@@ -164,14 +169,14 @@ export default function Home() {
       </div>
 
       {/* FOOTER */}
-      <footer className="bg-gray-900 border-t border-gray-800 py-8 px-4 text-center">
+      <footer className="bg-card border-t border-border py-8 px-4 text-center mt-auto">
         <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Smartphone className="text-blue-500" size={20} />
-            <span className="font-bold text-white">AdPhone</span>
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <Smartphone className="text-primary" size={20} />
+            <span className="font-bold text-lg">AdPhone</span>
           </div>
-          <p className="text-gray-500 text-sm">موقع مواصفات الهواتف الذكية</p>
-          <p className="text-gray-600 text-xs mt-2">© 2025 AdPhone. جميع الحقوق محفوظة</p>
+          <p className="text-muted-foreground text-sm">موقع مواصفات الهواتف الذكية</p>
+          <p className="text-muted-foreground text-xs mt-3">© 2025 AdPhone. جميع الحقوق محفوظة</p>
         </div>
       </footer>
     </div>
