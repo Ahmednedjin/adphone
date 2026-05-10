@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader as Loader2 } from "lucide-react";
 
 interface EditPhoneFormProps {
-  phoneId: number;
+  phoneId: string | number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -24,7 +24,10 @@ export default function EditPhoneForm({ phoneId, onSuccess, onCancel }: EditPhon
     if (phone) {
       setBrand(phone.brand);
       setModel(phone.model);
-      setSpecs(phone.specs);
+      const specsStr = typeof phone.specs === 'string'
+        ? phone.specs
+        : JSON.stringify(phone.specs);
+      setSpecs(specsStr);
       setImageUrl(phone.imageUrl || "");
     }
   }, [phone]);

@@ -2,7 +2,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
-import { getAllPhones, getPhoneById, phoneExists, insertPhone, updatePhone, deletePhone } from "./db";
+import { getAllPhones, getPhoneById, phoneExists, insertPhone, updatePhone, deletePhone } from "./supabase-db";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
@@ -33,9 +33,9 @@ export const appRouter = router({
       }),
 
     getById: publicProcedure
-      .input(z.number())
+      .input(z.string().or(z.number()))
       .query(async ({ input }) => {
-        return await getPhoneById(input);
+        return await getPhoneById(String(input));
       }),
 
     create: protectedProcedure
@@ -65,18 +65,26 @@ export const appRouter = router({
           });
         }
 
-        return await insertPhone({
-          brand: input.brand,
-          model: input.model,
-          specs: input.specs,
-          imageUrl: input.imageUrl,
-        });
+        try {
+          const specs = JSON.parse(input.specs);
+          return await insertPhone({
+            brand: input.brand,
+            model: input.model,
+            specs,
+            imageUrl: input.imageUrl,
+          });
+        } catch (error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid JSON in specs",
+          });
+        }
       }),
 
     update: protectedProcedure
       .input(
         z.object({
-          id: z.number(),
+          id: z.string().or(z.number()),
           brand: z.string().min(1).optional(),
           model: z.string().min(1).optional(),
           specs: z.string().optional(),
@@ -92,12 +100,23 @@ export const appRouter = router({
           });
         }
 
-        const { id, ...updates } = input;
-        return await updatePhone(id, updates);
+        const { id, specs, ...updates } = input;
+        const updateData: any = updates;
+        if (specs) {
+          try {
+            updateData.specs = JSON.parse(specs);
+          } catch (error) {
+            throw new TRPCError({
+              code: "BAD_REQUEST",
+              message: "Invalid JSON in specs",
+            });
+          }
+        }
+        return await updatePhone(String(id), updateData);
       }),
 
     delete: protectedProcedure
-      .input(z.number())
+      .input(z.string().or(z.number()))
       .mutation(async ({ input, ctx }) => {
         // Only admins can delete phones
         if (ctx.user?.role !== "admin") {
@@ -107,7 +126,7 @@ export const appRouter = router({
           });
         }
 
-        return await deletePhone(input);
+        return await deletePhone(String(input));
       }),
   }),
 });

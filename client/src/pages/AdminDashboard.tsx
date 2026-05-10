@@ -5,7 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Plus, Edit2, Trash2, Search } from "lucide-react";
+import { Loader as Loader2, Plus, CreditCard as Edit2, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 import AddPhoneForm from "@/components/AddPhoneForm";
 import EditPhoneForm from "@/components/EditPhoneForm";
@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingPhone, setEditingPhone] = useState<number | null>(null);
+  const [editingPhone, setEditingPhone] = useState<string | null>(null);
   const [searchBrand, setSearchBrand] = useState("");
   const [searchModel, setSearchModel] = useState("");
 
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     },
   });
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Are you sure you want to delete this phone?")) {
       deletePhoneMutation.mutate(id);
     }

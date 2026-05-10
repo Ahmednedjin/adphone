@@ -2,11 +2,11 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ArrowLeft } from "lucide-react";
+import { Loader as Loader2, ArrowLeft } from "lucide-react";
 
 export default function PhoneDetails() {
   const [location, navigate] = useLocation();
-  const phoneId = parseInt(location.split("/").pop() || "0");
+  const phoneId = location.split("/").pop() || "";
 
   const { data: phone, isLoading } = trpc.phones.getById.useQuery(phoneId);
 
@@ -38,7 +38,9 @@ export default function PhoneDetails() {
 
   let specs: Record<string, any> = {};
   try {
-    specs = JSON.parse(phone.specs);
+    specs = typeof phone.specs === 'string'
+      ? JSON.parse(phone.specs)
+      : phone.specs;
   } catch {
     specs = { error: "Invalid specs format" };
   }
