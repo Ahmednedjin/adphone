@@ -2,12 +2,11 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
-import { getAllPhones, getPhoneById, phoneExists, insertPhone, updatePhone, deletePhone } from "./supabase-db";
+import { getAllPhones, getPhoneById, phoneExists, insertPhone, updatePhone, deletePhone } from "./db";
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 
 export const appRouter = router({
-    // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -35,7 +34,7 @@ export const appRouter = router({
     getById: publicProcedure
       .input(z.string().or(z.number()))
       .query(async ({ input }) => {
-        return await getPhoneById(String(input));
+        return await getPhoneById(input);
       }),
 
     create: protectedProcedure
@@ -48,36 +47,26 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        // Only admins can add phones
         if (ctx.user?.role !== "admin") {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only admins can add phones",
-          });
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admins can add phones" });
         }
 
-        // Check if phone already exists
         const exists = await phoneExists(input.brand, input.model);
         if (exists) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Phone with this brand and model already exists",
-          });
+          throw new TRPCError({ code: "CONFLICT", message: "Phone already exists" });
         }
 
         try {
-          const specs = JSON.parse(input.specs);
+          // Verify JSON if it's a string
+          JSON.parse(input.specs);
           return await insertPhone({
             brand: input.brand,
             model: input.model,
-            specs,
+            specs: input.specs,
             imageUrl: input.imageUrl,
           });
         } catch (error) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Invalid JSON in specs",
-          });
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Invalid JSON in specs" });
         }
       }),
 
@@ -92,41 +81,21 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input, ctx }) => {
-        // Only admins can update phones
         if (ctx.user?.role !== "admin") {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only admins can update phones",
-          });
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admins can update phones" });
         }
 
-        const { id, specs, ...updates } = input;
-        const updateData: any = updates;
-        if (specs) {
-          try {
-            updateData.specs = JSON.parse(specs);
-          } catch (error) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Invalid JSON in specs",
-            });
-          }
-        }
-        return await updatePhone(String(id), updateData);
+        const { id, ...updates } = input;
+        return await updatePhone(id, updates);
       }),
 
     delete: protectedProcedure
       .input(z.string().or(z.number()))
       .mutation(async ({ input, ctx }) => {
-        // Only admins can delete phones
         if (ctx.user?.role !== "admin") {
-          throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "Only admins can delete phones",
-          });
+          throw new TRPCError({ code: "FORBIDDEN", message: "Only admins can delete phones" });
         }
-
-        return await deletePhone(String(input));
+        return await deletePhone(input);
       }),
   }),
 });

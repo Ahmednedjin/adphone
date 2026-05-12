@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Search, Smartphone, ChevronDown } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 const BRANDS = [
   { name: "Samsung", logo: "https://logo.clearbit.com/samsung.com", slug: "Samsung" },
@@ -20,39 +21,21 @@ const BRANDS = [
 export default function Home() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
-  const [phones, setPhones] = useState<any[]>([]);
-  const [filtered, setFiltered] = useState<any[]>([]);
   const [showBrands, setShowBrands] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/phones")
-      .then(r => r.json())
-      .then(data => {
-        setPhones(data);
-        setFiltered(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const { data: phones = [], isLoading } = trpc.phones.list.useQuery();
 
-  useEffect(() => {
-    if (!search.trim()) {
-      setFiltered(phones);
-      return;
-    }
+  const filtered = useMemo(() => {
+    if (!search.trim()) return phones;
     const q = search.toLowerCase();
-    setFiltered(
-      phones.filter(p =>
-        p.brand?.toLowerCase().includes(q) ||
-        p.model?.toLowerCase().includes(q)
-      )
+    return phones.filter(p =>
+      p.brand?.toLowerCase().includes(q) ||
+      p.model?.toLowerCase().includes(q)
     );
   }, [search, phones]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-
+    <div className="min-h-screen bg-gray-950 text-white" dir="rtl">
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3">
         <div className="max-w-6xl mx-auto flex flex-col gap-3">
@@ -72,13 +55,13 @@ export default function Home() {
 
           {/* SEARCH BAR */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
               placeholder="ابحث عن هاتف... Samsung, iPhone, Xiaomi"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500"
+              className="w-full bg-gray-800 border border-gray-700 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500"
             />
           </div>
         </div>
@@ -130,7 +113,7 @@ export default function Home() {
         {search && <h2 className="text-lg font-bold mb-4 text-gray-200">نتائج البحث ({filtered.length})</h2>}
         {!search && <h2 className="text-lg font-bold mb-4 text-gray-200">أحدث الهواتف</h2>}
 
-        {loading ? (
+        {isLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="bg-gray-900 rounded-2xl h-48 animate-pulse" />
@@ -144,7 +127,7 @@ export default function Home() {
               <button
                 key={phone.id}
                 onClick={() => navigate(`/phone/${phone.id}`)}
-                className="bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-2xl p-4 text-left transition flex flex-col gap-2"
+                className="bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-2xl p-4 text-right transition flex flex-col gap-2"
               >
                 {phone.imageUrl ? (
                   <img src={phone.imageUrl} alt={phone.model} className="w-full h-32 object-contain" />

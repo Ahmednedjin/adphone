@@ -1,15 +1,16 @@
-import { eq, and, like } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, phones, InsertPhone } from "../drizzle/schema";
+import { eq, and, ilike } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { users, phones, type InsertUser, type InsertPhone } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
-// Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      const client = postgres(process.env.DATABASE_URL);
+      _db = drizzle(client, { schema: { users, phones } });
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -24,52 +25,17 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   }
 
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot upsert user: database not available");
-    return;
-  }
+  if (!db) return;
 
   try {
-    const values: InsertUser = {
-      openId: user.openId,
-    };
-    const updateSet: Record<string, unknown> = {};
-
-    const textFields = ["name", "email", "loginMethod"] as const;
-    type TextField = (typeof textFields)[number];
-
-    const assignNullable = (field: TextField) => {
-      const value = user[field];
-      if (value === undefined) return;
-      const normalized = value ?? null;
-      values[field] = normalized;
-      updateSet[field] = normalized;
-    };
-
-    textFields.forEach(assignNullable);
-
-    if (user.lastSignedIn !== undefined) {
-      values.lastSignedIn = user.lastSignedIn;
-      updateSet.lastSignedIn = user.lastSignedIn;
-    }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
-      values.role = 'admin';
-      updateSet.role = 'admin';
-    }
-
-    if (!values.lastSignedIn) {
-      values.lastSignedIn = new Date();
-    }
-
-    if (Object.keys(updateSet).length === 0) {
-      updateSet.lastSignedIn = new Date();
-    }
-
-    await db.insert(users).values(values).onDuplicateKeyUpdate({
-      set: updateSet,
+    await db.insert(users).values(user).onConflictDoUpdate({
+      target: users.openId,
+      set: {
+        name: user.name,
+        email: user.email,
+        lastSignedIn: new Date(),
+        role: user.openId === ENV.ownerOpenId ? 'admin' : user.role
+      }
     });
   } catch (error) {
     console.error("[Database] Failed to upsert user:", error);
@@ -79,35 +45,22 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
 export async function getUserByOpenId(openId: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get user: database not available");
-    return undefined;
-  }
-
+  if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
-  return result.length > 0 ? result[0] : undefined;
+  return result[0];
 }
 
-/**
- * Get all phones with optional filtering
- */
 export async function getAllPhones(filter?: { brand?: string; model?: string }) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get phones: database not available");
-    return [];
-  }
+  if (!db) return [];
 
   try {
     let conditions = [];
-    if (filter?.brand && filter.brand.trim()) {
-      // Use LIKE for partial matching
-      conditions.push(like(phones.brand, `%${filter.brand.trim()}%`));
+    if (filter?.brand?.trim()) {
+      conditions.push(ilike(phones.brand, `%${filter.brand.trim()}%`));
     }
-    if (filter?.model && filter.model.trim()) {
-      // Use LIKE for partial matching
-      conditions.push(like(phones.model, `%${filter.model.trim()}%`));
+    if (filter?.model?.trim()) {
+      conditions.push(ilike(phones.model, `%${filter.model.trim()}%`));
     }
 
     const query = conditions.length > 0 
@@ -121,103 +74,42 @@ export async function getAllPhones(filter?: { brand?: string; model?: string }) 
   }
 }
 
-/**
- * Get a single phone by ID
- */
-export async function getPhoneById(id: number) {
+export async function getPhoneById(id: number | string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot get phone: database not available");
-    return undefined;
-  }
-
+  if (!db) return undefined;
   try {
-    const result = await db.select().from(phones).where(eq(phones.id, id)).limit(1);
-    return result.length > 0 ? result[0] : undefined;
+    const phoneId = typeof id === 'string' ? parseInt(id) : id;
+    const result = await db.select().from(phones).where(eq(phones.id, phoneId)).limit(1);
+    return result[0];
   } catch (error) {
     console.error("[Database] Failed to get phone:", error);
     return undefined;
   }
 }
 
-/**
- * Check if a phone already exists by brand and model
- */
 export async function phoneExists(brand: string, model: string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot check phone existence: database not available");
-    return false;
-  }
-
-  try {
-    const result = await db
-      .select()
-      .from(phones)
-      .where(and(eq(phones.brand, brand), eq(phones.model, model)))
-      .limit(1);
-    return result.length > 0;
-  } catch (error) {
-    console.error("[Database] Failed to check phone existence:", error);
-    return false;
-  }
+  if (!db) return false;
+  const result = await db.select().from(phones).where(and(eq(phones.brand, brand), eq(phones.model, model))).limit(1);
+  return result.length > 0;
 }
 
-/**
- * Insert a new phone
- */
 export async function insertPhone(phone: InsertPhone) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot insert phone: database not available");
-    return undefined;
-  }
-
-  try {
-    const result = await db.insert(phones).values(phone);
-    return result;
-  } catch (error) {
-    console.error("[Database] Failed to insert phone:", error);
-    throw error;
-  }
+  if (!db) return undefined;
+  return await db.insert(phones).values(phone).returning();
 }
 
-/**
- * Update an existing phone
- */
-export async function updatePhone(id: number, updates: Partial<InsertPhone>) {
+export async function updatePhone(id: number | string, updates: Partial<InsertPhone>) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot update phone: database not available");
-    return undefined;
-  }
-
-  try {
-    const result = await db.update(phones).set(updates).where(eq(phones.id, id));
-    return result;
-  } catch (error) {
-    console.error("[Database] Failed to update phone:", error);
-    throw error;
-  }
+  if (!db) return undefined;
+  const phoneId = typeof id === 'string' ? parseInt(id) : id;
+  return await db.update(phones).set({ ...updates, updatedAt: new Date() }).where(eq(phones.id, phoneId)).returning();
 }
 
-/**
- * Delete a phone
- */
-export async function deletePhone(id: number) {
+export async function deletePhone(id: number | string) {
   const db = await getDb();
-  if (!db) {
-    console.warn("[Database] Cannot delete phone: database not available");
-    return undefined;
-  }
-
-  try {
-    const result = await db.delete(phones).where(eq(phones.id, id));
-    return result;
-  } catch (error) {
-    console.error("[Database] Failed to delete phone:", error);
-    throw error;
-  }
+  if (!db) return undefined;
+  const phoneId = typeof id === 'string' ? parseInt(id) : id;
+  return await db.delete(phones).where(eq(phones.id, phoneId)).returning();
 }
-
-// TODO: add feature queries here as your schema grows.
