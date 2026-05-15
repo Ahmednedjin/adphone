@@ -145,7 +145,7 @@ export default function PhoneDetails() {
         .neq("id", p.id)
         .order("year", { ascending: false })
         .limit(12);
-      setSameBrand(sb ?? []);
+      setSameBrand((sb as PhoneCard[]) ?? []);
 
       // Similar phones (same year ± 1, different brand)
       const yr = p.year ?? new Date().getFullYear();
