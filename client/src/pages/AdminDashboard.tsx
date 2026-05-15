@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingPhone, setEditingPhone] = useState<string | null>(null);
+  const [editingPhone, setEditingPhone] = useState<number | null>(null);
   const [searchBrand, setSearchBrand] = useState("");
   const [searchModel, setSearchModel] = useState("");
 
