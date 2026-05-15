@@ -158,7 +158,7 @@ export default function PhoneDetails() {
         .gte("year", yr - 1)
         .lte("year", yr + 1)
         .limit(12);
-      setSimilar(sim ?? []);
+      setSimilar((sim as PhoneCard[]) ?? []);
     })();
   }, [slug]);
 
