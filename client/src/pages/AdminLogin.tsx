@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Lock, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-const ADMIN_PASSWORD = process.env.VITE_ADMIN_PASSWORD || "admin123";
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
 
 export default function AdminLogin() {
   const [, navigate] = useLocation();
