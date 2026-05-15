@@ -1,162 +1,129 @@
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { Search, Smartphone, ChevronDown } from "lucide-react";
-import { trpc } from "@/lib/trpc";
+import { supabase } from "@db/client";
+import SiteHeader from "@/components/SiteHeader";
 
-const BRANDS = [
-  { name: "Samsung", logo: "https://logo.clearbit.com/samsung.com", slug: "Samsung" },
-  { name: "Apple", logo: "https://logo.clearbit.com/apple.com", slug: "Apple" },
-  { name: "Xiaomi", logo: "https://logo.clearbit.com/xiaomi.com", slug: "Xiaomi" },
-  { name: "Huawei", logo: "https://logo.clearbit.com/huawei.com", slug: "Huawei" },
-  { name: "Oppo", logo: "https://logo.clearbit.com/oppo.com", slug: "Oppo" },
-  { name: "Vivo", logo: "https://logo.clearbit.com/vivo.com", slug: "Vivo" },
-  { name: "Realme", logo: "https://logo.clearbit.com/realme.com", slug: "Realme" },
-  { name: "OnePlus", logo: "https://logo.clearbit.com/oneplus.com", slug: "OnePlus" },
-  { name: "Google", logo: "https://logo.clearbit.com/google.com", slug: "Google" },
-  { name: "Sony", logo: "https://logo.clearbit.com/sony.com", slug: "Sony" },
-  { name: "Motorola", logo: "https://logo.clearbit.com/motorola.com", slug: "Motorola" },
-  { name: "Nokia", logo: "https://logo.clearbit.com/nokia.com", slug: "Nokia" },
-];
+type Brand = { id: string; slug: string; name: string; name_ar: string | null; logo: string | null; color: string | null };
+type Phone = { id: string; slug: string; name: string; image: string | null; year: number | null };
 
 export default function Home() {
   const [, navigate] = useLocation();
-  const [search, setSearch] = useState("");
-  const [showBrands, setShowBrands] = useState(false);
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [latest, setLatest] = useState<Phone[]>([]);
+  const [popular, setPopular] = useState<Phone[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const { data: phones = [], isLoading } = trpc.phones.list.useQuery();
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return phones;
-    const q = search.toLowerCase();
-    return phones.filter(p =>
-      p.brand?.toLowerCase().includes(q) ||
-      p.model?.toLowerCase().includes(q)
-    );
-  }, [search, phones]);
+  useEffect(() => {
+    (async () => {
+      const [{ data: b }, { data: l }, { data: p }] = await Promise.all([
+        supabase.from("brands").select("id,slug,name,name_ar,logo,color").order("name"),
+        supabase.from("phones").select("id,slug,name,image,year").eq("status", "published").order("year", { ascending: false }).limit(12),
+        supabase.from("phones").select("id,slug,name,image,year").eq("status", "published").order("created_at", { ascending: false }).range(12, 23),
+      ]);
+      setBrands((b as Brand[]) ?? []);
+      setLatest((l as Phone[]) ?? []);
+      setPopular((p as Phone[]) ?? []);
+      setLoading(false);
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-950 text-white" dir="rtl">
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Smartphone className="text-blue-500" size={24} />
-              <span className="text-xl font-bold text-white">AdPhone</span>
-            </div>
-            <button
-              onClick={() => setShowBrands(!showBrands)}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
-              الشركات
-              <ChevronDown size={16} className={`transition-transform ${showBrands ? "rotate-180" : ""}`} />
-            </button>
-          </div>
+      <SiteHeader />
 
-          {/* SEARCH BAR */}
-          <div className="relative">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="text"
-              placeholder="ابحث عن هاتف... Samsung, iPhone, Xiaomi"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-xl pr-10 pl-4 py-3 text-sm focus:outline-none focus:border-blue-500 placeholder-gray-500"
-            />
-          </div>
-        </div>
+      <main className="max-w-6xl mx-auto px-4 py-6 space-y-10">
+        {/* HERO */}
+        <section className="text-center py-6">
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">مواصفات كل الهواتف</h1>
+          <p className="text-gray-400 text-sm md:text-base">ابحث وقارن بين أحدث الهواتف الذكية</p>
+        </section>
 
-        {/* BRANDS DROPDOWN */}
-        {showBrands && (
-          <div className="max-w-6xl mx-auto mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 pb-3">
-            {BRANDS.map(brand => (
+        {/* LATEST PHONES */}
+        <Section title="أحدث الهواتف">
+          <PhoneGrid phones={latest} loading={loading} onClick={(s) => navigate(`/phone/${s}`)} />
+        </Section>
+
+        {/* BRANDS */}
+        <Section title="تصفح حسب الشركة">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+            {brands.map((b) => (
               <button
-                key={brand.slug}
-                onClick={() => { navigate(`/brand/${brand.slug}`); setShowBrands(false); }}
-                className="flex flex-col items-center gap-2 bg-gray-800 hover:bg-gray-700 rounded-xl p-3 transition"
+                key={b.id}
+                onClick={() => navigate(`/brand/${b.slug}`)}
+                className="group bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-gray-700 rounded-xl p-4 flex flex-col items-center gap-2 transition"
               >
-                <img src={brand.logo} alt={brand.name} className="w-10 h-10 object-contain rounded-lg" onError={e => (e.currentTarget.src = "https://via.placeholder.com/40")} />
-                <span className="text-xs text-gray-300">{brand.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </nav>
-
-      {/* HERO */}
-      <div className="max-w-6xl mx-auto px-4 py-10 text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">مواصفات كل الهواتف</h1>
-        <p className="text-gray-400 text-sm">ابحث وقارن بين أحدث الهواتف الذكية</p>
-      </div>
-
-      {/* BRANDS GRID - shown when no search */}
-      {!search && (
-        <div className="max-w-6xl mx-auto px-4 mb-10">
-          <h2 className="text-lg font-bold mb-4 text-gray-200">الشركات</h2>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4">
-            {BRANDS.map(brand => (
-              <button
-                key={brand.slug}
-                onClick={() => navigate(`/brand/${brand.slug}`)}
-                className="flex flex-col items-center gap-2 bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-2xl p-4 transition"
-              >
-                <img src={brand.logo} alt={brand.name} className="w-12 h-12 object-contain" onError={e => (e.currentTarget.src = "https://via.placeholder.com/48")} />
-                <span className="text-xs text-gray-300 font-medium">{brand.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* PHONES GRID */}
-      <div className="max-w-6xl mx-auto px-4 pb-16">
-        {search && <h2 className="text-lg font-bold mb-4 text-gray-200">نتائج البحث ({filtered.length})</h2>}
-        {!search && <h2 className="text-lg font-bold mb-4 text-gray-200">أحدث الهواتف</h2>}
-
-        {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-gray-900 rounded-2xl h-48 animate-pulse" />
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="text-center text-gray-500 py-20">لم يتم العثور على هواتف</div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {filtered.slice(0, 20).map(phone => (
-              <button
-                key={phone.id}
-                onClick={() => navigate(`/phone/${phone.id}`)}
-                className="bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-2xl p-4 text-right transition flex flex-col gap-2"
-              >
-                {phone.imageUrl ? (
-                  <img src={phone.imageUrl} alt={phone.model} className="w-full h-32 object-contain" />
+                {b.logo ? (
+                  <img
+                    src={b.logo}
+                    alt={b.name}
+                    className="h-10 w-auto max-w-[80%] object-contain filter brightness-0 invert opacity-80 group-hover:opacity-100 transition"
+                    loading="lazy"
+                  />
                 ) : (
-                  <div className="w-full h-32 flex items-center justify-center">
-                    <Smartphone className="text-gray-700" size={48} />
-                  </div>
+                  <div className="h-10 flex items-center font-bold text-lg">{b.name}</div>
                 )}
-                <div>
-                  <p className="text-xs text-blue-400 font-medium">{phone.brand}</p>
-                  <p className="text-sm font-bold text-white truncate">{phone.model}</p>
-                </div>
+                <span className="text-xs text-gray-400 group-hover:text-white">{b.name_ar || b.name}</span>
               </button>
             ))}
           </div>
-        )}
-      </div>
+        </Section>
 
-      {/* FOOTER */}
-      <footer className="bg-gray-900 border-t border-gray-800 py-8 px-4 text-center">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Smartphone className="text-blue-500" size={20} />
-            <span className="font-bold text-white">AdPhone</span>
-          </div>
-          <p className="text-gray-500 text-sm">موقع مواصفات الهواتف الذكية</p>
-          <p className="text-gray-600 text-xs mt-2">© 2025 AdPhone. جميع الحقوق محفوظة</p>
-        </div>
+        {/* POPULAR */}
+        {popular.length > 0 && (
+          <Section title="هواتف شائعة">
+            <PhoneGrid phones={popular} loading={false} onClick={(s) => navigate(`/phone/${s}`)} />
+          </Section>
+        )}
+      </main>
+
+      <footer className="border-t border-gray-800 mt-16 py-8 text-center text-gray-500 text-sm">
+        <div>© AdPhone 2026 — موقع مواصفات الهواتف الذكية</div>
       </footer>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section>
+      <h2 className="text-xl md:text-2xl font-bold mb-4 border-r-4 border-blue-500 pr-3">{title}</h2>
+      {children}
+    </section>
+  );
+}
+
+function PhoneGrid({ phones, loading, onClick }: { phones: Phone[]; loading: boolean; onClick: (slug: string) => void }) {
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="aspect-square bg-gray-900 border border-gray-800 rounded-xl animate-pulse" />
+        ))}
+      </div>
+    );
+  }
+  if (phones.length === 0) {
+    return <p className="text-gray-500 text-center py-8">لم يتم العثور على هواتف</p>;
+  }
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      {phones.map((p) => (
+        <button
+          key={p.id}
+          onClick={() => onClick(p.slug)}
+          className="bg-gray-900 hover:bg-gray-800 border border-gray-800 hover:border-blue-500 rounded-xl p-3 transition group flex flex-col"
+        >
+          <div className="aspect-square bg-white/5 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+            {p.image ? (
+              <img src={p.image} alt={p.name} className="max-h-full max-w-full object-contain group-hover:scale-105 transition" loading="lazy" />
+            ) : (
+              <span className="text-gray-600 text-xs">لا توجد صورة</span>
+            )}
+          </div>
+          <span className="text-xs md:text-sm font-medium text-center text-gray-200 line-clamp-2 min-h-[2.5em]">{p.name}</span>
+          {p.year && <span className="text-[10px] text-gray-500 text-center mt-1">{p.year}</span>}
+        </button>
+      ))}
     </div>
   );
 }
