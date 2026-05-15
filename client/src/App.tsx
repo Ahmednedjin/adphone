@@ -10,6 +10,7 @@ import AdminLogin from "./pages/AdminLogin";
 import UserLogin from "./pages/UserLogin";
 import UserSettings from "./pages/UserSettings";
 import PhoneDetails from "./pages/PhoneDetails";
+import BrandPage from "./pages/BrandPage";
 
 function Router() {
   return (
@@ -19,7 +20,8 @@ function Router() {
       <Route path={"/settings"} component={UserSettings} />
       <Route path={"/admin/login"} component={AdminLogin} />
       <Route path={"/admin/*"} component={AdminDashboard} />
-      <Route path={"/phone/:id"} component={PhoneDetails} />
+      <Route path={"/phone/:slug"} component={PhoneDetails} />
+      <Route path={"/brand/:slug"} component={BrandPage} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
