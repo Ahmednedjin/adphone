@@ -5,6 +5,7 @@ import { supabase } from "@db/client";
 import SiteHeader from "@/components/SiteHeader";
 
 type Phone = Record<string, any>;
+type PhoneCard = { id: string; slug: string; name: string; image: string | null; year: number | null };
 
 const SPEC_GROUPS: { title: string; rows: { key: string; label: string }[] }[] = [
   {
