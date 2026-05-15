@@ -113,8 +113,8 @@ export default function PhoneDetails() {
   const [location, navigate] = useLocation();
   const slug = location.split("/").pop() || "";
   const [phone, setPhone] = useState<Phone | null>(null);
-  const [similar, setSimilar] = useState<Phone[]>([]);
-  const [sameBrand, setSameBrand] = useState<Phone[]>([]);
+  const [similar, setSimilar] = useState<PhoneCard[]>([]);
+  const [sameBrand, setSameBrand] = useState<PhoneCard[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
