@@ -14,7 +14,7 @@ export default function AdminDashboard() {
   const { user, isAuthenticated } = useAuth();
   const [, navigate] = useLocation();
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingPhone, setEditingPhone] = useState<string | null>(null);
+  const [editingPhone, setEditingPhone] = useState<number | null>(null);
   const [searchBrand, setSearchBrand] = useState("");
   const [searchModel, setSearchModel] = useState("");
 
@@ -43,7 +43,7 @@ export default function AdminDashboard() {
     },
   });
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     if (confirm("Are you sure you want to delete this phone?")) {
       deletePhoneMutation.mutate(id);
     }
